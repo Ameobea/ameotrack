@@ -1,0 +1,23 @@
+Feature list
+
+=====Todo list=====
+-Password bank (?)
+-SMS/email reminder
+-image/file uploader/hoster (with automatic deletion, management features, editing, download, link shortner integration, etc)
++Link shortner
+-Journal upload/hosting/retrieval
+-personal analytics (reddit, youtube, twitter, etc.)
+-a-year-ago-today tool
+-Commonly used links
+-Inline integration of things like email, reddit, facebook, etc
+-Reddit messages to email
+-Central messaging queue (email, twitter, facebook, reddit, etc) (??)
+
+---------------
+	1Broker 
+---------------
+
+-Get tool to trawl oil price history for a while to provide some form of reference.
+
+--Trading Strategies--
+-You can buy both a long and short position (possibly with an adjustable bias towards more long/more short) with high margin.  Open positions RIGHT before oil inventory reports are released.  Set very tight stop lossses on both of them so that such that once the trend becomes apparent, the position on the wrong side of the trend is closed and losses minimized.
