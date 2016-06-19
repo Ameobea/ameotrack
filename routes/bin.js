@@ -9,7 +9,7 @@ router.get("/", (req, res, next)=>{
 });
 
 router.post("/", (req, res, next)=>{
-  dbq.saveBin("", req.body.password, req.body.text, req.body.filename, (err, dbRes)=>{
+  dbq.saveBin("", req.body.password, req.body.text, req.body.filename, req.body.secret, (err, dbRes)=>{
     if(err){
       res.render("error")
     }else{
@@ -29,7 +29,7 @@ router.get("/:shortname", (req, res, next)=>{
 });
 
 router.post("/:shortname", (req, res, next)=>{
-  dbq.saveBin(req.params.shortname, req.body.password, req.body.text, req.body.filename, (err, dbRes)=>{
+  dbq.saveBin(req.params.shortname, req.body.password, req.body.text, req.body.filename, req.body.secret, (err, dbRes)=>{
     if(err){
       res.render("bin_wrongPass");
     }else{

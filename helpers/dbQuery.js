@@ -182,13 +182,17 @@ dbq.getBin = (shortname, callback)=>{
   });
 };
 
-dbq.saveBin = (shortname, password, text, filename, callback)=>{
+dbq.saveBin = (shortname, password, text, filename, secret, callback)=>{
   helpers.dbConnect(conn=>{
     conn.query("SELECT * FROM `bins` WHERE `shortname` = ?;", [shortname], (err, existing)=>{
       if(shortname == ""){
         var sha256 = crypto.createHash("sha256").update(text).digest("hex");
         dbq.startFileUpload("ameobin", sha256, -1, text.length, conf.password, (placeholder, _connection, dotOrNaw, __shortname)=>{
-          shortname = placeholder[0].id.toString(36);
+          if(secret == undefined){
+            shortname = placeholder[0].id.toString(36);
+          }else{
+            shortname = placeholder[0].hash;
+          }
           conn.query("UPDATE `hostedFiles` SET `shortname` = ? WHERE `shortname` = ?;", [shortname, placeholder[0].shortname], function(err, _res){
             bcrypt.hash(password, null, null, (err, hashedPass)=>{
               conn.query("INSERT INTO `bins` (text, shortname, password, filename) VALUES(?, ?, ?, ?);", [text, shortname, hashedPass, filename], (err, __res)=>{

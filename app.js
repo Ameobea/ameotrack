@@ -36,6 +36,15 @@ app.use(logger('dev'));
 app.use(cookieParser());
 app.use(bp.json());
 app.use(bp.urlencoded({extended: false}));
+
+app.use(function(req, res, next) {
+  if(req.url.substr(-1) == '/' && req.url.length > 1){
+    res.redirect(301, "/u" + req.url.slice(0, -1));
+  }else{
+    next();
+  }
+});
+
 app.get('/fireworks', function(req, res, next){
 	res.sendFile('index.html', {root: __dirname + '/public/fireworks/'});
 	get_path = `/t?type=event&category=ameotrack_fireworks&password=${conf.event_password}&data={}`;
