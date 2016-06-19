@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AmeoBin</title>
+  <style type="text/css" media="screen">
+    #editor { 
+      position: relative;
+      height: 95%;
+    }
+
+    body {
+      background-color: #040404;
+      color: white;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.0.0.min.js"   integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0="   crossorigin="anonymous"></script>
+  <script type="text/javascript">
+  $(document).ready(function(){
+    $("#save").click(function(){
+      var editor2 = ace.edit("editor");
+      $("#hiddenText").val(editor2.getValue());
+      $("#mainForm").submit();
+    });
+  });
+  </script>
+</head>
+<body>
+<div>
+<div id="editor" style="height: 800px;"><%= text %></div>
+</div>
+<div>
+<form id="mainForm" action="" method="POST">
+<input type="hidden" name="text" id="hiddenText">
+Password: <input type="password" name="password" id="password" style="display: inline-block;">  Filename: <input type="text" name="filename" id="filename" value="<%= filename %>" style="display: inline-block;"><input type="button" id="save" value="Save" style="display: inline-block;">
+</form>
+</div>
+<script type="text/javascript" src="../sources/ace-builds/src-min-noconflict/ace.js"></script>
+<script type="text/javascript" src="../sources/ace-builds/src-min-noconflict/ext-modelist.js"></script>
+<script>
+$(document).ready(function(){
+  var editor = ace.edit("editor");
+  var modelist = ace.require("ace/ext/modelist");
+  var mode = modelist.getModeForPath("<%= filename %>");
+  editor.setTheme("ace/theme/twilight");
+  editor.getSession().setMode("ace/mode/javascript");
+});
+</script>
+</body>
+</html>

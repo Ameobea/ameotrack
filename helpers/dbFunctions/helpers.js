@@ -11,7 +11,6 @@ helpers.deleteRowByShortname = function(shortname, connection, callback){
 			connection.query("DELETE FROM `hostedFiles` WHERE `path` = ?", [result1[0].path], function(err, result2){
 				connection.destroy();
 				if(result2.affectedRows > 0){
-					//console.log(result1[0].path);
 					fs.unlink(result1[0].path, function(){
 						callback(true);
 					})
@@ -23,7 +22,7 @@ helpers.deleteRowByShortname = function(shortname, connection, callback){
 			callback(false);
 		}
 	})
-}
+};
 
 helpers.dbConnect = function(callback){
 	var connection = mysql.createConnection({
@@ -34,20 +33,18 @@ helpers.dbConnect = function(callback){
 	});
 
 	connection.on('error', function(err){
-		//console.log("connection to db server lost...");
 		if(err) {
 			setTimeout(helpers.dbConnect(callback), 2000);
 		}
 	})
 
 	connection.connect(function(err){
-		//console.log("connection to db server lost...");
 		if(err) {
 			setTimeout(helpers.dbConnect(callback), 2000);
 		}
 	})
 	callback(connection);
-}
+};
 
 helpers.getOpenFilename = function(path, callback){
 	fs.exists(path, function(exists){
@@ -64,10 +61,9 @@ helpers.getOpenFilename = function(path, callback){
 			callback(path);
 		}
 	});
-}
+};
 
 helpers.renameJournal = function(oldPath, newPath, uploadDate, callback){
-	//console.log(uploadDate.getDay());
 	fs.exists("./journals/".concat(uploadDate.getFullYear(), "/"), function(yearFolderExists){
 		if(!yearFolderExists){
 			fs.mkdirSync("./journals/".concat(uploadDate.getFullYear(), "/"))

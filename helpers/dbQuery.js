@@ -1,8 +1,10 @@
 "use strict";
 /*jslint node: true */
+var crypto = require("crypto");
 
 var conf = require('./conf.js');
 var helpers = require('./dbFunctions/helpers.js');
+var bcrypt = require("bcrypt-nodejs");
 
 var dbq = exports;
 
@@ -64,14 +66,15 @@ dbq.startFileUpload = function(ext, hash, expiry, size, password, callback){
     }
     helpers.dbConnect(function(connection){
       var res = Math.random()+Math.random()+Math.random(); //unique identifier for new file rows, allowing for concurrent uploads
-      connection.query("SELECT `shortname`,`path` FROM `hostedFiles` WHERE `hash` = '".concat(hash, "'"), function(err, existingFile){ //make sure no files with same hash already exist
+      var query = "SELECT * FROM `hostedFiles` WHERE `hash` = '".concat(hash, "'");
+      connection.query(query, function(err, existingFile){ //make sure no files with same hash already exist
         if(err){
           console.log("error checking for duplicate hashes in files table.");
           console.log(err);
         }else{
           if(typeof existingFile[0] != 'undefined'){
             connection.destroy();
-            callback(existingFile[0].shortname.concat(dotOrNaw,ext), existingFile[0].path);
+            callback(existingFile);
           }else{ //insert placeholder row
             var expiryD = null;
             if(expiry != -1){
@@ -79,12 +82,15 @@ dbq.startFileUpload = function(ext, hash, expiry, size, password, callback){
               expiryD.setTime(expiryD.getTime()+(expiry*86400000));
             }
             var path="TEMP";
-            connection.query("".concat("INSERT INTO `hostedFiles` (shortname, extension, hash, path, size, expiry) VALUES(", connection.escape(res), ", ", connection.escape(ext), ", ", connection.escape(hash), ", ", connection.escape(path),", ",size,", ",connection.escape(expiryD),");"), function(err, result){
+            var query = "".concat("INSERT INTO `hostedFiles` (shortname, extension, hash, path, size, expiry) VALUES(",
+                connection.escape(res), ", ", connection.escape(ext), ", ", connection.escape(hash), ", ",
+                connection.escape(path),", ",size,", ",connection.escape(expiryD),");");
+            connection.query(query, function(err, result){
               if(err){
                 console.log("error inserting placeholder into files database.");
                 console.err(err.stack);
               }else{ //get the id of the placeholder row
-                connection.query("SELECT `id` FROM `hostedFiles` WHERE `shortname` = ".concat(res, ";"), function(err, placeholder){
+                connection.query("SELECT * FROM `hostedFiles` WHERE `shortname` = ".concat(res, ";"), function(err, placeholder){
                   callback(placeholder, connection, dotOrNaw, res);
                 });
               }
@@ -127,9 +133,9 @@ dbq.doOneViewFileUpload = function(ext, hash, expiry, size, password, callback){
       }
     });
   });
-}
+};
 
-dbq.doSecretFileUpload = function(ext, hash, expiry, size, password, callback){
+dbq.doSecretFileUpload = (ext, hash, expiry, size, password, callback)=>{
   dbq.startFileUpload(ext, hash, expiry, size, password, function(placeholder, connection, dotOrNaw, res){
     var shortName = hash;
     var path = "./uploads/".concat(shortName,dotOrNaw,ext); //CHANGE IN FUTURE TO SUPPORT MULTIPLE UPLOAD DIRECTORIES IF NEED BE
@@ -143,10 +149,10 @@ dbq.doSecretFileUpload = function(ext, hash, expiry, size, password, callback){
       }
     });
   });
-}
+};
 
-dbq.checkExpiredFiles = function(callback){
-  helpers.dbConnect(function(connection){
+dbq.checkExpiredFiles = callback=>{
+  helpers.dbConnect(connection=>{
     connection.query('SELECT `shortname` FROM `hostedFiles` WHERE `expiry` < NOW();', function(err, result){
       connection.destroy();
       callback(result);
@@ -154,9 +160,8 @@ dbq.checkExpiredFiles = function(callback){
   });
 };
 
-dbq.saveJournal = function(muhFile, uploadDate, encrypt, callback){
-  helpers.dbConnect(function(connection){
-    console.log(uploadDate);
+dbq.saveJournal = (muhFile, uploadDate, encrypt, callback)=>{
+  helpers.dbConnect(connection=>{
     var oldSavePath = "./journals/".concat(uploadDate.getFullYear(), "/", uploadDate.getMonth()+1, "/", uploadDate.getDate(), "/", uploadDate.getHours(), "-", uploadDate.getMinutes(), "-", uploadDate.getSeconds(), ".", muhFile.extension);
     helpers.getOpenFilename(oldSavePath, function(newSavePath){
       helpers.renameJournal(muhFile.path, newSavePath, uploadDate, function(){
@@ -165,6 +170,42 @@ dbq.saveJournal = function(muhFile, uploadDate, encrypt, callback){
           callback("Journal successfully uploaded!");
         });
       });
+    });
+  });
+};
+
+dbq.getBin = (shortname, callback)=>{
+  helpers.dbConnect(conn=>{
+    conn.query("SELECT * FROM `bins` WHERE `shortname` = ?;", [shortname], (err, res)=>{
+      callback(null, res[0]);
+    });
+  });
+};
+
+dbq.saveBin = (shortname, password, text, callback)=>{
+  helpers.dbConnect(conn=>{
+    conn.query("SELECT * FROM `bins` WHERE `shortname` = ?;", [shortname], (err, res)=>{
+      if(shortname == ""){
+        var sha256 = crypto.createHash("sha256").update(text).digest("hex");
+        dbq.startFileUpload("ameobin", sha256, -1, text.length, conf.password, (placeholder, _connection, dotOrNaw, __shortname)=>{
+          shortname = placeholder[0].id.toString(36);
+          conn.query("UPDATE `hostedFiles` SET `shortname` = ? WHERE `shortname` = ?;", [shortname, placeholder[0].shortname], function(err, res){
+            bcrypt.hash(password, null, null, (err, hashedPass)=>{
+              conn.query("INSERT INTO `bins` (text, shortname, password) VALUES(?, ?, ?);", [text, shortname, hashedPass], (err, res)=>{
+                callback(null, {shortname: shortname, text: text});
+              });
+            });
+          });
+        });
+      }else{
+        bcrypt.compare(password, res[0].password, (err, goodHash)=>{
+          if(goodHash){
+            conn.query("UPDATE `bins` SET `text` = ? WHERE `shortname` = ?;", [text, shortname], (err, res)=>{});
+            callback(null, {shortname: shortname, text: text});
+          }
+          callback(null, {shortname: shortname, text: res[0].text});
+        });
+      }
     });
   });
 };

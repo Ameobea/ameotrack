@@ -7,12 +7,14 @@ var schedule = require('node-schedule');
 var ws = require("nodejs-websocket");
 var fs = require('fs');
 var http = require('http');
+var bp = require("body-parser");
 
 var routes = require('./routes/index');
 var upload = require('./routes/upload');
 var deleter = require('./routes/delete');
 var manager = require('./routes/manage');
 var oneTimePortal = require("./routes/oneTime");
+var ameoBin = require("./routes/bin");
 
 var journals = require('./routes/journal.js');
 var file_analytics = require('./routes/f_analytics.js');
@@ -32,6 +34,8 @@ app.set('view engine', 'ejs');
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
 app.use(cookieParser());
+app.use(bp.json());
+app.use(bp.urlencoded({extended: false}));
 app.get('/fireworks', function(req, res, next){
 	res.sendFile('index.html', {root: __dirname + '/public/fireworks/'});
 	get_path = `/t?type=event&category=ameotrack_fireworks&password=${conf.event_password}&data={}`;
@@ -52,6 +56,7 @@ app.use("/analytics", file_analytics);
 app.use("/t", tracker);
 app.use("/1broker", broker);
 app.use("/ot", oneTimePortal);
+app.use("/bin", ameoBin);
 
 app.use(express.static(__dirname + '/uploads', {
 	callback: function(req){
