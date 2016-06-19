@@ -182,7 +182,8 @@ dbq.getBin = (shortname, callback)=>{
   });
 };
 
-dbq.saveBin = (shortname, password, text, callback)=>{
+dbq.saveBin = (shortname, password, text, filename, callback)=>{
+  console.log(filename);
   helpers.dbConnect(conn=>{
     conn.query("SELECT * FROM `bins` WHERE `shortname` = ?;", [shortname], (err, res)=>{
       if(shortname == ""){
@@ -191,7 +192,7 @@ dbq.saveBin = (shortname, password, text, callback)=>{
           shortname = placeholder[0].id.toString(36);
           conn.query("UPDATE `hostedFiles` SET `shortname` = ? WHERE `shortname` = ?;", [shortname, placeholder[0].shortname], function(err, res){
             bcrypt.hash(password, null, null, (err, hashedPass)=>{
-              conn.query("INSERT INTO `bins` (text, shortname, password) VALUES(?, ?, ?);", [text, shortname, hashedPass], (err, res)=>{
+              conn.query("INSERT INTO `bins` (text, shortname, password, filename) VALUES(?, ?, ?, ?);", [text, shortname, hashedPass, filename], (err, res)=>{
                 callback(null, {shortname: shortname, text: text});
               });
             });
@@ -200,7 +201,7 @@ dbq.saveBin = (shortname, password, text, callback)=>{
       }else{
         bcrypt.compare(password, res[0].password, (err, goodHash)=>{
           if(goodHash){
-            conn.query("UPDATE `bins` SET `text` = ? WHERE `shortname` = ?;", [text, shortname], (err, res)=>{});
+            conn.query("UPDATE `bins` SET `text` = ?, `filename` = ? WHERE `shortname` = ?;", [text, filename, shortname], (err, res)=>{});
             callback(null, {shortname: shortname, text: text});
           }
           callback(null, {shortname: shortname, text: res[0].text});

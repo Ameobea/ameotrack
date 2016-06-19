@@ -42,7 +42,7 @@ $(document).ready(function(){
   var modelist = ace.require("ace/ext/modelist");
   var mode = modelist.getModeForPath("<%= filename %>");
   editor.setTheme("ace/theme/twilight");
-  editor.getSession().setMode("ace/mode/javascript");
+  editor.getSession().setMode(mode.mode);
 });
 </script>
 </body>
