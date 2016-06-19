@@ -183,28 +183,28 @@ dbq.getBin = (shortname, callback)=>{
 };
 
 dbq.saveBin = (shortname, password, text, filename, callback)=>{
-  console.log(filename);
   helpers.dbConnect(conn=>{
-    conn.query("SELECT * FROM `bins` WHERE `shortname` = ?;", [shortname], (err, res)=>{
+    conn.query("SELECT * FROM `bins` WHERE `shortname` = ?;", [shortname], (err, existing)=>{
       if(shortname == ""){
         var sha256 = crypto.createHash("sha256").update(text).digest("hex");
         dbq.startFileUpload("ameobin", sha256, -1, text.length, conf.password, (placeholder, _connection, dotOrNaw, __shortname)=>{
           shortname = placeholder[0].id.toString(36);
-          conn.query("UPDATE `hostedFiles` SET `shortname` = ? WHERE `shortname` = ?;", [shortname, placeholder[0].shortname], function(err, res){
+          conn.query("UPDATE `hostedFiles` SET `shortname` = ? WHERE `shortname` = ?;", [shortname, placeholder[0].shortname], function(err, _res){
             bcrypt.hash(password, null, null, (err, hashedPass)=>{
-              conn.query("INSERT INTO `bins` (text, shortname, password, filename) VALUES(?, ?, ?, ?);", [text, shortname, hashedPass, filename], (err, res)=>{
+              conn.query("INSERT INTO `bins` (text, shortname, password, filename) VALUES(?, ?, ?, ?);", [text, shortname, hashedPass, filename], (err, __res)=>{
                 callback(null, {shortname: shortname, text: text});
               });
             });
           });
         });
       }else{
-        bcrypt.compare(password, res[0].password, (err, goodHash)=>{
+        bcrypt.compare(password, existing[0].password, (err, goodHash)=>{
           if(goodHash){
-            conn.query("UPDATE `bins` SET `text` = ?, `filename` = ? WHERE `shortname` = ?;", [text, filename, shortname], (err, res)=>{});
-            callback(null, {shortname: shortname, text: text});
+            conn.query("UPDATE `bins` SET `text` = ?, `filename` = ? WHERE `shortname` = ?;", [text, filename, shortname], (err, _res)=>{});
+            callback(null, {shortname: shortname, text: text, filename: filename});
+          }else{
+            callback(null, {shortname: shortname, text: existing[0].text, filename: existing[0].filename});
           }
-          callback(null, {shortname: shortname, text: res[0].text});
         });
       }
     });
