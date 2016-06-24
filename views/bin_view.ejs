@@ -40,6 +40,7 @@ Password: <input type="password" name="password" id="password" style="display: i
 <script>
 $(document).ready(function(){
   var editor = ace.edit("editor");
+  editor.setOption("wrap", true);
   var modelist = ace.require("ace/ext/modelist");
   var mode = modelist.getModeForPath("<%= filename %>");
   editor.setTheme("ace/theme/twilight");
