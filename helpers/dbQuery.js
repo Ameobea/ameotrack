@@ -214,3 +214,29 @@ dbq.saveBin = (shortname, password, text, filename, secret, callback)=>{
     });
   });
 };
+
+dbq.list_images = (start, end)=>{
+  return new Promise((f,r)=>{
+    start = parseInt(start);
+    end = parseInt(end);
+    if(end-start <= 24 && end-start >= 0){
+      var query = "SELECT * FROM `hostedFiles` WHERE 1 ORDER BY `uploadTime` DESC LIMIT ?,?;";
+      helpers.dbConnect(conn=>{
+        conn.query(query, [start, end], (err, res)=>{
+          if(err){
+            console.log(err);
+            r();
+          }else{
+            var urls = "[";
+            for(var i=0;i<res.length;i++){
+              urls += `"https://ameo.link/u/${res[i].shortname}.${res[i].extension}/", `;
+            }
+            f(urls + "]")
+          }
+        });
+      });
+    }else{
+      r();
+    }
+  });
+};

@@ -1,12 +1,21 @@
 <html>
 <head>
 <title>Ameotrack Image Manager</title>
+<script type="text/javascript">
+  var pass = "<%=pass%>";
+</script>
 <script src="https://ameo.link/u/sources/jquery-2.1.3.min.js"></script>
 <script src="https://ameo.link/u/sources/bootstrap/js/bootstrap.min.js"></script>
+<script src="https://ameo.link/u/sources/manage.js"></script>
 <link rel="stylesheet" href="https://ameo.link/u/sources/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://ameo.link/u/sources/style.css">
+<link rel="stylesheet" href="https://ameo.link/u/sources/manage.css">
 </head>
 <body>
-Ameotrack Image Manager
+<table><tbody id="mainTable"></tbody></table>
+<table width="100%"><tr>
+<td><input type="button" id="back" value="<-"></td>
+<td><input type="button" id="next" value="->"></td>
+</tr></table>
 </body>
 </html>

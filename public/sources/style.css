@@ -41,3 +41,7 @@ h1 {
 .centered {
 	text-align: center !important;
 }
+
+input {
+  color: black;
+}
