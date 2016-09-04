@@ -13,9 +13,9 @@ var req = (cb)=>{
 
 var disp = (urls)=>{
   var html = "";
-  for(var i=0;i<4;i++){
+  for(var i=0;i<6;i++){
     html += "<tr>";
-    for(var j=0;j<6;j++){
+    for(var j=0;j<4;j++){
       let url = urls[4*i+j];
       html += `<td><a href="${url}"><img src="${url}"></td>`;
     }
