@@ -17,7 +17,7 @@ var disp = (urls)=>{
     html += "<tr>";
     for(var j=0;j<4;j++){
       let url = urls[4*i+j];
-      html += `<td><a href="${url}"><img src="${url}"></td>`;
+      html += `<td><a href="${url}" target="_blank"><img src="${url}"></td>`;
     }
     html += "</tr>\n";
   }
