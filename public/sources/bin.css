@@ -8,3 +8,7 @@ textarea {
   width: 100%;
   height: 90%;
 }
+
+body {
+  font-size: 14pt;
+}
