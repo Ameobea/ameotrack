@@ -76,7 +76,7 @@ app.use(express.static(__dirname + '/uploads', {
 			console.log("connected!");
 		});
 		dbq.deleteIfOneTimeView(req.url.substring(1,req.url.length).split(".")[0]);
-		dbq.logFileAccess(req.url.substring(1,req.url.length).split(".")[0], req.headers["cf-connecting-ip"], req.headers["cf-ipcountry"], req.headers["user-agent"]);
+		dbq.logFileAccess(req.url.substring(1,req.url.length).split(".")[0], req.headers["x-forwarded-for"], req.headers["cf-ipcountry"], req.headers["user-agent"]);
 	}
 }));
 
