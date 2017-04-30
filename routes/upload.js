@@ -1,24 +1,24 @@
-var express = require('express');
-var router = express.Router();
-var multer = require('multer');
-var fs = require('fs');
-var hasher = require('hash-files');
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const fs = require('fs');
+const hasher = require('hash-files');
 
-var dbq = require('../helpers/dbQuery.js');
+const dbq = require('../helpers/dbQuery.js');
 
 router.use(multer({
   dest: './uploads/',
   limits: {
-    fileSize: 15050000000 //Max file size 15,050MB
+    fileSize: 2e10 // Max file size 20GB
   },
-  onFileSizeLimit: function(file) { //Delete partially written files that exceed the maximum file size
+  onFileSizeLimit: function(file) { // Delete partially written files that exceed the maximum file size
     console.log('Max file size exceeded!');
     fs.unlink('./' + file.path);
-  }
+  },
 }));
 
 router.get('/', function(req, res, next) {
-  res.render("manual-upload");
+  res.render('manual-upload');
 });
 
 router.post('/', function(req, res) {
@@ -44,7 +44,7 @@ router.post('/', function(req, res) {
           });
         }
         res.send('https://ameo.link/u/ot/'.concat(shortName));
-      })
+      });
     }else if(req.body.secret){
       dbq.doSecretFileUpload(spl[1], hash, expiry, muhFile.size, req.body.password, function(shortName, path){
         if(shortName !== 'Invalid password!' && typeof shortName !== 'undefined'){
@@ -56,7 +56,7 @@ router.post('/', function(req, res) {
           });
         }
         res.send('https://ameo.link/u/'.concat(shortName));
-      })
+      });
     }else{
       dbq.doFileUpload(spl[1], hash, expiry, muhFile.size, req.body.password, function(shortName, path){
         if(shortName !== 'Invalid password!' && typeof shortName !== 'undefined'){
