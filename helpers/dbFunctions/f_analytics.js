@@ -23,7 +23,7 @@ f_analytics.get_most_accessed = function(n, callback){
 						callback1(data);
 					}
 
-					connection.release();
+					connection.end(function(err) {console.error('Error while closing MySQL Connection!');});
 				});
 			}
 

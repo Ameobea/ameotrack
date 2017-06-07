@@ -18,7 +18,7 @@ dbq.doDelete = function(shortname, password, callback){
           callback('Error deleting file; either it doesn\'t exist or another error occured.');
         }
 
-				connection.release();
+				connection.(function(err) {console.error('Error while closing MySQL Connection!');});
       });
     });
   } else {
@@ -53,7 +53,7 @@ dbq.logFileAccess = function(image_code, ip, country_code, user_agent){
           console.log('Error inserting access data into database.');
           console.log(err);
         }
-        connection.release();
+        connection.end(function(err) {console.error('Error while closing MySQL Connection!');});
       });
     }
   });
@@ -156,7 +156,7 @@ dbq.doSecretFileUpload = (ext, hash, expiry, size, password, callback)=>{
 dbq.checkExpiredFiles = callback=>{
   helpers.dbConnect(connection=>{
     connection.query('SELECT `shortname` FROM `hostedFiles` WHERE `expiry` < NOW();', function(err, result){
-      connection.release();
+      connection.end(function(err){console.error('Error while closing MySQL Connection!');});
       callback(result);
     });
   });
