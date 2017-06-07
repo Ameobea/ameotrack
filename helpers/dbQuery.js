@@ -11,26 +11,28 @@ var dbq = exports;
 dbq.doDelete = function(shortname, password, callback){
   if(password == conf.password){
     helpers.dbConnect(function(connection){
-      helpers.deleteRowByShortname(shortname, connection, function(result){
+      helpers.deleteRowByShortname(shortname, connection, function(result) {
         if(result === true){
           callback('Successfully deleted file!');
-        }else{
+        } else {
           callback('Error deleting file; either it doesn\'t exist or another error occured.');
         }
+
+				connection.release();
       });
     });
-  }else{
+  } else {
     callback('Invalid password!');
   }
 };
 
-dbq.deleteIfOneTimeView = function(shortname){
-  helpers.dbConnect(function(connection){
+dbq.deleteIfOneTimeView = function(shortname) {
+  helpers.dbConnect(function(connection) {
     var queryString = 'SELECT `one_time` FROM `hostedFiles` WHERE `shortname` = ?';
     connection.query(queryString, [shortname], function(err, oneTime){
       if(oneTime[0]){
         if(oneTime[0].one_time){
-          dbq.doDelete(shortname, conf.password, function(){
+          dbq.doDelete(shortname, conf.password, function() {
             console.log('One time view file successfully deleted.');
           });
         }
@@ -51,7 +53,7 @@ dbq.logFileAccess = function(image_code, ip, country_code, user_agent){
           console.log('Error inserting access data into database.');
           console.log(err);
         }
-        connection.destroy();
+        connection.release();
       });
     }
   });
@@ -154,7 +156,7 @@ dbq.doSecretFileUpload = (ext, hash, expiry, size, password, callback)=>{
 dbq.checkExpiredFiles = callback=>{
   helpers.dbConnect(connection=>{
     connection.query('SELECT `shortname` FROM `hostedFiles` WHERE `expiry` < NOW();', function(err, result){
-      connection.destroy();
+      connection.release();
       callback(result);
     });
   });

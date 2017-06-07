@@ -5,20 +5,20 @@ var conf = require('../conf.js');
 
 var helpers = exports;
 
-helpers.deleteRowByShortname = function(shortname, connection, callback){
-	connection.query("SELECT `path` FROM `hostedFiles` WHERE `shortname` = ?", [shortname], function(err, result1){
-		if(typeof result1[0] != 'undefined'){ //row does exist in table
-			connection.query("DELETE FROM `hostedFiles` WHERE `path` = ?", [result1[0].path], function(err, result2){
+helpers.deleteRowByShortname = function(shortname, connection, callback) {
+	connection.query("SELECT `path` FROM `hostedFiles` WHERE `shortname` = ?", [shortname], function(err, result1) {
+		if(typeof result1[0] != 'undefined') { //row does exist in table
+			connection.query("DELETE FROM `hostedFiles` WHERE `path` = ?", [result1[0].path], function(err, result2) {
 				connection.destroy();
-				if(result2.affectedRows > 0){
-					fs.unlink(result1[0].path, function(){
+				if(result2.affectedRows > 0) {
+					fs.unlink(result1[0].path, function() {
 						callback(true);
 					})
-				}else{
+				} else {
 					callback(false);
 				}
 			})
-		}else{ //row doesn't exist in table
+		} else { //row doesn't exist in table
 			callback(false);
 		}
 	})
@@ -36,13 +36,14 @@ helpers.dbConnect = function(callback){
 		if(err) {
 			setTimeout(helpers.dbConnect(callback), 2000);
 		}
-	})
+	});
 
 	connection.connect(function(err){
 		if(err) {
 			setTimeout(helpers.dbConnect(callback), 2000);
 		}
-	})
+	});
+
 	callback(connection);
 };
 
