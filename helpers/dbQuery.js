@@ -18,7 +18,7 @@ dbq.doDelete = function(shortname, password, callback){
           callback('Error deleting file; either it doesn\'t exist or another error occured.');
         }
 
-				connection.(function(err) {console.error('Error while closing MySQL Connection!');});
+				connection.end(function(err) {console.error('Error while closing MySQL Connection!');});
       });
     });
   } else {
@@ -30,13 +30,15 @@ dbq.deleteIfOneTimeView = function(shortname) {
   helpers.dbConnect(function(connection) {
     var queryString = 'SELECT `one_time` FROM `hostedFiles` WHERE `shortname` = ?';
     connection.query(queryString, [shortname], function(err, oneTime){
-      if(oneTime[0]){
-        if(oneTime[0].one_time){
+      if(oneTime[0]) {
+        if(oneTime[0].one_time) {
           dbq.doDelete(shortname, conf.password, function() {
             console.log('One time view file successfully deleted.');
           });
         }
       }
+
+      connection.end();
     });
   });
 };
@@ -53,7 +55,7 @@ dbq.logFileAccess = function(image_code, ip, country_code, user_agent){
           console.log('Error inserting access data into database.');
           console.log(err);
         }
-        connection.end(function(err) {console.error('Error while closing MySQL Connection!');});
+        connection.end();
       });
     }
   });
@@ -225,16 +227,17 @@ dbq.list_images = (start, end)=>{
       var query = 'SELECT * FROM `hostedFiles` WHERE 1 ORDER BY `uploadTime` DESC LIMIT ?,?;';
       helpers.dbConnect(conn=>{
         conn.query(query, [start, end], (err, res)=>{
-          if(err){
+          if(err) {
             console.log(err);
             r();
-          }else{
+          } else {
             var urls = '[';
             for(var i=0;i<res.length;i++){
               urls += `"https://ameo.link/u/${res[i].shortname}.${res[i].extension}/", `;
             }
             f(urls + ']');
           }
+          conn.end();
         });
       });
     }else{
