@@ -61,34 +61,33 @@ dbq.logFileAccess = function(image_code, ip, country_code, user_agent){
   });
 };
 
-dbq.startFileUpload = function(ext, hash, expiry, size, password, callback){
-  if(password === conf.password){
+dbq.startFileUpload = function(ext, hash, expiry, size, password, source, callback){
+  if(password === conf.password) {
     var dotOrNaw = '.';
-    if(typeof ext == 'undefined'){ //remove extension if none is provided
+    if(typeof ext == 'undefined') { //remove extension if none is provided
       ext = '';
       dotOrNaw = '';
     }
-    helpers.dbConnect(function(connection){
+    helpers.dbConnect(function(connection) {
       var res = Math.random()+Math.random()+Math.random(); //unique identifier for new file rows, allowing for concurrent uploads
       var query = 'SELECT * FROM `hostedFiles` WHERE `hash` = \''.concat(hash, '\'');
       connection.query(query, function(err, existingFile){ //make sure no files with same hash already exist
         if(err){
           console.log('error checking for duplicate hashes in files table.');
           console.log(err);
-        }else{
+        } else {
           if(typeof existingFile[0] != 'undefined'){
-            connection.destroy();
-            callback(existingFile);
-          }else{ //insert placeholder row
+            callback(existingFile, connection, dorOrNaw, res);
+          } else { //insert placeholder row
             var expiryD = null;
             if(expiry != -1){
               expiryD = new Date();
               expiryD.setTime(expiryD.getTime()+(expiry*86400000));
             }
             var path='TEMP';
-            var query = ''.concat('INSERT INTO `hostedFiles` (shortname, extension, hash, path, size, expiry) VALUES(',
+            var query = ''.concat('INSERT INTO `hostedFiles` (shortname, extension, hash, path, size, expiry, source) VALUES(',
                 connection.escape(res), ', ', connection.escape(ext), ', ', connection.escape(hash), ', ',
-                connection.escape(path),', ',size,', ',connection.escape(expiryD),');');
+                connection.escape(path),', ',size,', ',connection.escape(expiryD), ', ', connection.escape(source), ');');
             connection.query(query, function(err, result){
               if(err){
                 console.log('error inserting placeholder into files database.');
@@ -106,8 +105,8 @@ dbq.startFileUpload = function(ext, hash, expiry, size, password, callback){
   }
 };
 
-dbq.doFileUpload = function(ext, hash, expiry, size, password, callback){
-  dbq.startFileUpload(ext, hash, expiry, size, password, function(placeholder, connection, dotOrNaw, res){
+dbq.doFileUpload = function(ext, hash, expiry, size, password, source, callback){
+  dbq.startFileUpload(ext, hash, expiry, size, password, source, function(placeholder, connection, dotOrNaw, res){
     //update the placeholder row with the real data
     var shortName = placeholder[0].id.toString(36);
     var path = './uploads/'.concat(shortName,dotOrNaw,ext); //CHANGE IN FUTURE TO SUPPORT MULTIPLE UPLOAD DIRECTORIES IF NEED BE
@@ -123,8 +122,8 @@ dbq.doFileUpload = function(ext, hash, expiry, size, password, callback){
   });
 };
 
-dbq.doOneViewFileUpload = function(ext, hash, expiry, size, password, callback){
-  dbq.startFileUpload(ext, hash, expiry, size, password, function(placeholder, connection, dotOrNaw, res){
+dbq.doOneViewFileUpload = function(ext, hash, expiry, size, password, source, callback){
+  dbq.startFileUpload(ext, hash, expiry, size, password, source, function(placeholder, connection, dotOrNaw, res){
     var shortName = hash;
     var path = './uploads/'.concat(shortName,dotOrNaw,ext); //CHANGE IN FUTURE TO SUPPORT MULTIPLE UPLOAD DIRECTORIES IF NEED BE
     connection.query('UPDATE `hostedFiles` SET `one_time` = 1, `shortname` = \''.concat(shortName,'\', `path` = ? WHERE `shortname` = ',res,';'), [path], function(err, res){
@@ -139,8 +138,8 @@ dbq.doOneViewFileUpload = function(ext, hash, expiry, size, password, callback){
   });
 };
 
-dbq.doSecretFileUpload = (ext, hash, expiry, size, password, callback)=>{
-  dbq.startFileUpload(ext, hash, expiry, size, password, function(placeholder, connection, dotOrNaw, res){
+dbq.doSecretFileUpload = (ext, hash, expiry, size, password, source, callback)=>{
+  dbq.startFileUpload(ext, hash, expiry, size, password, source, function(placeholder, connection, dotOrNaw, res){
     var shortName = hash;
     var path = './uploads/'.concat(shortName,dotOrNaw,ext); //CHANGE IN FUTURE TO SUPPORT MULTIPLE UPLOAD DIRECTORIES IF NEED BE
     connection.query('UPDATE `hostedFiles` SET `shortname` = \''.concat(shortName,'\', `path` = ? WHERE `shortname` = ',res,';'), [path], function(err, res){
@@ -191,7 +190,7 @@ dbq.saveBin = (shortname, password, text, filename, secret, callback)=>{
     conn.query('SELECT * FROM `bins` WHERE `shortname` = ?;', [shortname], (err, existing)=>{
       if(shortname == ''){
         var sha256 = crypto.createHash('sha256').update(text).digest('hex');
-        dbq.startFileUpload('ameobin', sha256, -1, text.length, conf.password, (placeholder, _connection, dotOrNaw, __shortname)=>{
+        dbq.startFileUpload('ameobin', sha256, -1, text.length, conf.password, "ameobin", (placeholder, _connection, dotOrNaw, __shortname)=>{
           if(secret == undefined){
             shortname = placeholder[0].id.toString(36);
           }else{

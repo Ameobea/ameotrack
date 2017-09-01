@@ -30,11 +30,12 @@ router.post('/', function(req, res) {
   var spl = req.files.file.name.split('.');
   hasher({files: ['./uploads/'.concat(muhFile.name)]}, function(error, hash) {
     var expiry = req.body.expiry;
+    var source = req.body.source || "manual";
     if(typeof expiry === 'undefined') {
       expiry = -1;
     }
     if(req.body.oneTime){
-      dbq.doOneViewFileUpload(spl[1], hash, expiry, muhFile.size, req.body.password, function(shortName, path){
+      dbq.doOneViewFileUpload(spl[1], hash, expiry, muhFile.size, req.body.password, source, function(shortName, path){
         if(shortName !== 'Invalid password!' && typeof shortName !== 'undefined'){
           fs.rename('./uploads/'.concat(muhFile.name), path, function(err){
             if(err){
@@ -45,8 +46,8 @@ router.post('/', function(req, res) {
         }
         res.send('https://ameo.link/u/ot/'.concat(shortName));
       });
-    }else if(req.body.secret){
-      dbq.doSecretFileUpload(spl[1], hash, expiry, muhFile.size, req.body.password, function(shortName, path){
+    } else if(req.body.secret){
+      dbq.doSecretFileUpload(spl[1], hash, expiry, muhFile.size, req.body.password, source, function(shortName, path){
         if(shortName !== 'Invalid password!' && typeof shortName !== 'undefined'){
           fs.rename('./uploads/'.concat(muhFile.name), path, function(err){
             if(err){
@@ -57,8 +58,8 @@ router.post('/', function(req, res) {
         }
         res.send('https://ameo.link/u/'.concat(shortName));
       });
-    }else{
-      dbq.doFileUpload(spl[1], hash, expiry, muhFile.size, req.body.password, function(shortName, path){
+    } else {
+      dbq.doFileUpload(spl[1], hash, expiry, muhFile.size, req.body.password, source, function(shortName, path){
         if(shortName !== 'Invalid password!' && typeof shortName !== 'undefined'){
           fs.rename('./uploads/'.concat(muhFile.name), path, function(err){
             if(err){
