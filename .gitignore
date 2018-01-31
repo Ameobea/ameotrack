@@ -35,3 +35,4 @@ temp/
 npm-debug.log
 bin
 yarn.lock
+yarn.lock

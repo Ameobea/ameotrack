@@ -1,30 +1,30 @@
 'use strict';
 
-var express = require('express');
-var path = require('path');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var schedule = require('node-schedule');
-var ws = require('nodejs-websocket');
-var http = require('http');
-var bp = require('body-parser');
+const express = require('express');
+const path = require('path');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const schedule = require('node-schedule');
+const ws = require('nodejs-websocket');
+const http = require('http');
+const bp = require('body-parser');
 
-var routes = require('./routes/index');
-var upload = require('./routes/upload');
-var deleter = require('./routes/delete');
-var manager = require('./routes/manage');
-var oneTimePortal = require('./routes/oneTime');
-var ameoBin = require('./routes/bin');
+const routes = require('./routes/index');
+const upload = require('./routes/upload');
+const deleter = require('./routes/delete');
+const manager = require('./routes/manage');
+const oneTimePortal = require('./routes/oneTime');
+const ameoBin = require('./routes/bin');
 const feedback = require('./routes/feedback');
 
-var journals = require('./routes/journal.js');
-var file_analytics = require('./routes/f_analytics.js');
-var tracker = require('./routes/tracker.js');
-var broker = require('./routes/broker.js');
-var dbq = require('./helpers/dbQuery.js');
-var conf = require('./helpers/conf.js');
+const journals = require('./routes/journal.js');
+const file_analytics = require('./routes/f_analytics.js');
+const tracker = require('./routes/tracker.js');
+const broker = require('./routes/broker.js');
+const dbq = require('./helpers/dbQuery.js');
+const conf = require('./helpers/conf.js');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.engine('html', require('ejs').renderFile);
@@ -145,4 +145,4 @@ schedule.scheduleJob('1 * * * * *', function(){
   });
 });
 
-module.exports = app;
+app.listen(3000, console.log("Ameotrack launched on port 3000"));
