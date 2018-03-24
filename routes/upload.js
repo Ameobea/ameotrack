@@ -20,11 +20,11 @@ router.use(
   })
 );
 
-router.get('/', function(req, res, next) {
+router.get('/', (req, res, next) => {
   res.render('manual-upload');
 });
 
-router.post('/', function(req, res) {
+router.post('/', (req, res) => {
   const muhFile = req.files.file;
   if (!muhFile) {
     return res.send('No file was supplied;');

@@ -22,7 +22,7 @@ router.get('/get', (req, res, next) => {
 
   dbq
     .list_images(req.query.start, req.query.end)
-    .then(res.send)
+    .then(urls => res.send(urls))
     // dbq didn't like our start/end or some kind of db error
     .catch(() => res.render('error'));
 });

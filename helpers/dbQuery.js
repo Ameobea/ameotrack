@@ -125,8 +125,7 @@ dbq.startFileUpload = (
           (err, result) => {
             if (err) {
               console.log('error inserting placeholder into files database.');
-              console.err(err.stack);
-              return;
+              return console.err(err.stack);
             }
 
             // Get the id of the placeholder row
@@ -171,7 +170,7 @@ dbq.uploadFile = ({ oneTime = false, secret = false }) => (
       };
 
       connection.query(
-        `UPDATE \`hostedFiles\` SET ? WHERE \`shortname\` = "${shortName}";`,
+        `UPDATE \`hostedFiles\` SET ? WHERE \`shortname\` = ${res};`,
         values,
         (err, res) => {
           connection.destroy();
@@ -300,18 +299,18 @@ dbq.saveBin = (shortname, password, text, filename, secret, cb) => {
   });
 };
 
-dbq.list_images = (start, end) => {
-  return new Promise((f, r) => {
-    start = parseInt(start);
-    end = parseInt(end);
-    if (!(end - start <= 24 && end - start >= 0)) {
+dbq.list_images = (start, end) =>
+  new Promise((f, r) => {
+    const startIndex = parseInt(start);
+    const endIndex = parseInt(end);
+    if (!(end - startIndex <= 24 && endIndex - startIndex >= 0)) {
       return r();
     }
 
     const query =
       'SELECT * FROM `hostedFiles` WHERE 1 ORDER BY `uploadTime` DESC LIMIT ?,?;';
     helpers.dbConnect(conn => {
-      conn.query(query, [start, end], (err, res) => {
+      conn.query(query, [startIndex, endIndex], (err, res) => {
         if (err) {
           console.log(err);
           conn.end();
@@ -330,4 +329,3 @@ dbq.list_images = (start, end) => {
       });
     });
   });
-};
