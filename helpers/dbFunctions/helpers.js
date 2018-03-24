@@ -1,130 +1,101 @@
-var mysql = require('mysql');
-var fs = require('fs');
+const mysql = require('mysql');
+const fs = require('fs');
 
-var conf = require('../conf.js');
+const conf = require('../conf.js');
 
-var helpers = exports;
+const helpers = exports;
 
-helpers.deleteRowByShortname = function(shortname, connection, callback) {
+helpers.deleteRowByShortname = (shortname, connection, cb) => {
   connection.query(
     'SELECT `path` FROM `hostedFiles` WHERE `shortname` = ?',
     [shortname],
-    function(err, result1) {
-      if (typeof result1[0] != 'undefined') {
-        //row does exist in table
-        connection.query(
-          'DELETE FROM `hostedFiles` WHERE `path` = ?',
-          [result1[0].path],
-          function(err, result2) {
-            connection.destroy();
-            if (result2.affectedRows > 0) {
-              fs.unlink(result1[0].path, function() {
-                callback(true);
-              });
-            } else {
-              callback(false);
-            }
-          }
-        );
-      } else {
+    (err, result1) => {
+      if (!result1[0]) {
         //row doesn't exist in table
-        callback(false);
+        cb(false);
+        return;
       }
+
+      //row does exist in table
+      connection.query(
+        'DELETE FROM `hostedFiles` WHERE `path` = ?',
+        [result1[0].path],
+        (err, result2) => {
+          connection.destroy();
+
+          if (result2.affectedRows > 0) {
+            fs.unlink(result1[0].path, () => {
+              cb(true);
+            });
+          } else {
+            cb(false);
+          }
+        }
+      );
     }
   );
 };
 
-helpers.dbConnect = function(callback) {
-  var connection = mysql.createConnection({
+helpers.dbConnect = cb => {
+  const connection = mysql.createConnection({
     host: conf.dbHost,
     user: conf.dbUser,
     password: conf.dbPassword,
     database: conf.dbDatabase,
   });
 
-  connection.on('error', function(err) {
+  connection.on('error', err => {
     if (err) {
-      setTimeout(helpers.dbConnect(callback), 2000);
+      setTimeout(helpers.dbConnect(cb), 2000);
     }
   });
 
-  connection.connect(function(err) {
+  connection.connect(err => {
     if (err) {
-      setTimeout(helpers.dbConnect(callback), 2000);
+      setTimeout(helpers.dbConnect(cb), 2000);
     }
   });
 
-  callback(connection);
+  cb(connection);
 };
 
-helpers.getOpenFilename = function(path, callback) {
-  fs.exists(path, function(exists) {
-    if (exists) {
-      if (path.indexOf('_')) {
-        var split = path.split('_');
-        path = split[0].concat('_', parseInt(split[1]) + 1);
-        helpers.getOpenFilename(path, callback);
-      } else {
-        path = path.concat('_1');
-        helpers.getOpenFilename(path, callback);
-      }
+helpers.dbConnectPromise = () => new Promise((f, r) => helpers.dbConnect(f));
+
+helpers.getOpenFilename = (path, callback) => {
+  fs.exists(path, exists => {
+    if (!exists) {
+      return callback(path);
+    }
+
+    if (path.indexOf('_')) {
+      var split = path.split('_');
+      path = split[0].concat('_', parseInt(split[1]) + 1);
+      helpers.getOpenFilename(path, callback);
     } else {
-      callback(path);
+      path = path.concat('_1');
+      helpers.getOpenFilename(path, callback);
     }
   });
 };
 
 helpers.renameJournal = function(oldPath, newPath, uploadDate, callback) {
-  fs.exists('./journals/'.concat(uploadDate.getFullYear(), '/'), function(
-    yearFolderExists
-  ) {
+  fs.exists(`./journals/${uploadDate.getFullYear()}/`, yearFolderExists => {
     if (!yearFolderExists) {
-      fs.mkdirSync('./journals/'.concat(uploadDate.getFullYear(), '/'));
+      fs.mkdirSync(`./journals/${uploadDate.getFullYear()}/`);
     }
-    fs.exists(
-      './journals/'.concat(
-        uploadDate.getFullYear(),
-        '/',
-        uploadDate.getMonth() + 1,
-        '/'
-      ),
-      function(monthFolderExists) {
-        if (!monthFolderExists) {
-          fs.mkdirSync(
-            './journals/'.concat(
-              uploadDate.getFullYear(),
-              '/',
-              uploadDate.getMonth() + 1,
-              '/'
-            )
-          );
-        }
-        fs.exists(
-          './journals/'.concat(
-            uploadDate.getFullYear(),
-            '/',
-            uploadDate.getMonth() + 1,
-            '/',
-            uploadDate.getDate(),
-            '/'
-          ),
-          function(dayFolderExists) {
-            if (!dayFolderExists) {
-              fs.mkdirSync(
-                './journals/'.concat(
-                  uploadDate.getFullYear(),
-                  '/',
-                  uploadDate.getMonth() + 1,
-                  '/',
-                  uploadDate.getDate(),
-                  '/'
-                )
-              );
-            }
-            fs.rename(oldPath, newPath, callback);
-          }
-        );
-      }
-    );
+
+    const monthFolderPath = `./journals/${uploadDate.getFullYear()}/${uploadDate.getMonth() +
+      1}/`;
+    fs.exists(monthFolderPath, monthFolderExists => {
+      !monthFolderExists && fs.mkdirSync(monthFolderPath);
+
+      const dayFolderPath = `./journals/${uploadDate.getFullYear()}/${uploadDate.getMonth() +
+        1}/${uploadDate.getDate()}/`;
+      fs.exists(dayFolderPath, dayFolderExists => {
+        !dayFolderExists && fs.mkdirSync(dayFolderPath);
+
+        fs.rename(oldPath, newPath, callback);
+      });
+    });
   });
 };

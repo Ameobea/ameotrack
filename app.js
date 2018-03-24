@@ -4,7 +4,6 @@ const express = require('express');
 const path = require('path');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
-const schedule = require('node-schedule');
 const ws = require('nodejs-websocket');
 const http = require('http');
 const bp = require('body-parser');
@@ -17,12 +16,13 @@ const oneTimePortal = require('./routes/oneTime');
 const ameoBin = require('./routes/bin');
 const feedback = require('./routes/feedback');
 const remind = require('./routes/remind');
+const journals = require('./routes/journal');
+const file_analytics = require('./routes/f_analytics');
+const tracker = require('./routes/tracker');
 
-const journals = require('./routes/journal.js');
-const file_analytics = require('./routes/f_analytics.js');
-const tracker = require('./routes/tracker.js');
-const dbq = require('./helpers/dbQuery.js');
-const conf = require('./helpers/conf.js');
+const dbq = require('./helpers/dbQuery');
+const conf = require('./helpers/conf');
+const schedule = require('./helpers/schedule');
 
 const app = express();
 
@@ -51,16 +51,8 @@ app.get('/fireworks', function(req, res, next) {
   const get_path = `/t?type=event&category=ameotrack_fireworks&password=${
     conf.event_password
   }&data={}`;
-  var req1 = http.request(
-    { host: 'ip.ameobea.me', port: 3000, path: get_path },
-    function(res) {
-      /*console.log(res);*/
-    }
-  );
+  var req1 = http.request({ host: 'ameo.link', port: 3000, path: get_path });
   req1.end();
-  req1.on('connect', function(res, socket, head) {
-    console.log('connected!');
-  });
 });
 app.use(
   express.static(path.join(__dirname, 'public'), {
@@ -83,28 +75,22 @@ app.use('/remind', remind);
 
 app.use(
   express.static(__dirname + '/uploads', {
-    callback: function(req) {
+    callback: req => {
+      const fileStem = req.url.substring(1, req.url.length).split('.')[0];
       const get_path = `/t?type=event&category=ameotrack_image&password=${
         conf.event_password
-      }&data={image-name:"`.concat(
-        req.url.substring(1, req.url.length).split('.')[0],
-        '"}'
-      );
-      var req1 = http.request(
-        { host: 'ip.ameobea.me', port: 3000, path: get_path },
-        function(res) {
-          /*console.log(res);*/
-        }
-      );
-      req1.end();
-      req1.on('connect', function(res, socket, head) {
-        console.log('connected!');
+      }&data={image-name:"`.concat(fileStem, '"}');
+
+      const req1 = http.request({
+        host: 'ameo.link',
+        port: 3000,
+        path: get_path,
       });
-      dbq.deleteIfOneTimeView(
-        req.url.substring(1, req.url.length).split('.')[0]
-      );
+      req1.end();
+
+      dbq.deleteIfOneTimeView(fileStem);
       dbq.logFileAccess(
-        req.url.substring(1, req.url.length).split('.')[0],
+        fileStem,
         req.headers['x-forwarded-for'],
         req.headers['cf-ipcountry'],
         req.headers['user-agent']
@@ -115,25 +101,29 @@ app.use(
 
 var socket_server = ws
   .createServer(function(conn) {
-    socket_server.on('error', function(err) {
+    socket_server.on('error', err => {
       console.log('Websocket server had some sort of error:');
       console.log(err);
     });
-    conn.once('text', function(input) {
+    conn.once('text', input => {
       try {
         input = JSON.parse(input);
-        if (input.type && input.category && input.password && input.data) {
-          if (input.password == conf.event_password) {
-            socket_server.connections.forEach(function(connection) {
-              connection.sendText(
-                JSON.stringify({
-                  type: 'event',
-                  category: input.category,
-                  data: input.data,
-                })
-              );
-            });
-          }
+        if (
+          input.type &&
+          input.category &&
+          input.password &&
+          input.data &&
+          input.password == conf.event_password
+        ) {
+          socket_server.connections.forEach(connection => {
+            connection.sendText(
+              JSON.stringify({
+                type: 'event',
+                category: input.category,
+                data: input.data,
+              })
+            );
+          });
         }
       } catch (e) {
         console.log(e);
@@ -147,7 +137,7 @@ var socket_server = ws
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
+  app.use((err, req, res, next) => {
     res.status(err.status || 500);
     console.log(err.stack);
     res.render('error', {
@@ -159,7 +149,7 @@ if (app.get('env') === 'development') {
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,
@@ -167,21 +157,11 @@ app.use(function(err, req, res, next) {
   });
 });
 
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   res.status(404).send('Resource not found');
 });
 
-schedule.scheduleJob('1 * * * * *', function() {
-  dbq.checkExpiredFiles(function(rows) {
-    if (typeof rows == 'undefined') {
-      return;
-    }
-    for (var i = 0; i < rows.length; i++) {
-      dbq.doDelete(rows[i].shortname, conf.password, function(status) {
-        console.log(status);
-      });
-    }
-  });
+app.listen(3000, () => {
+  console.log('Ameotrack launched on port 3000');
+  schedule.init();
 });
-
-app.listen(3000, console.log('Ameotrack launched on port 3000'));
