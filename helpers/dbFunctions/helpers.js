@@ -52,8 +52,8 @@ helpers.dbConnect = cb => {
     err &&
     setTimeout(() => {
       console.log('Error connecting to MySQL DB; retrying in 2 seconds.');
-      helpers.dbConnect(cb, 2000);
-    });
+      helpers.dbConnect(cb);
+    }, 2000);
 
   connection.on('error', errCb);
   connection.connect(errCb);
