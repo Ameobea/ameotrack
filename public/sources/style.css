@@ -1,45 +1,49 @@
 body {
-	background-color: #171717;
-	color: #DDDDDD;
+  background-color: #171717;
+  color: #dddddd;
 }
 
 .content-header {
-	background-color: #171717;
+  background-color: #171717;
 }
 
 .content-container {
-	background-color: #222222;
-	font-size: 16px;
+  background-color: #222222;
+  font-size: 16px;
 }
 
-h1,h2,h3,h4,h5 {
-	color: #DDDDDD;
-	text-align: center;
-	margin-top: 10px !important;
-	margin-bottom: 10px !important;
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: #dddddd;
+  text-align: center;
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
 }
 
 h1 {
-	font-weight: 500 !important;
-	font-size: 48 !important;
+  font-weight: 500 !important;
+  font-size: 48 !important;
 }
 
 .spaced-links {
-	padding-right: 5px;
-	margin-right: 10px;
-	margin-top: 12px;
-	margin-left: 5px;
+  padding-right: 5px;
+  margin-right: 10px;
+  margin-top: 12px;
+  margin-left: 5px;
 }
 
 .first-link {
-	padding-right: 5px;
-	margin-right: 10px;
-	margin-top: 12px;
-	margin-left: 15px; 
+  padding-right: 5px;
+  margin-right: 10px;
+  margin-top: 12px;
+  margin-left: 15px;
 }
 
 .centered {
-	text-align: center !important;
+  text-align: center !important;
 }
 
 input {

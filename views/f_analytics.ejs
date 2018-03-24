@@ -1,15 +1,36 @@
 <html>
+
 <head>
-<title>AmeoTrack File Uploader Analytics</title>
+    <title>AmeoTrack File Uploader Analytics</title>
 </head>
+
 <body>
-<h1>AmeoTrack File Uploader Analytics</h1>
-<h2>Most accessed files</h2>
-<table>
-<tr><th>Accesses</th><th>File</th></tr>
-<% for(i=0; i<most_viewed.length-1; i++){%>
-<tr><td style="border: 1px solid black;"><%= most_viewed[i].amount %></td><td style="border: 1px solid black;"><%if(most_viewed[i].extension != "DEL"){%><a href="https://ameo.link/u/<%= most_viewed[i].image_code %>.<%= most_viewed[i].extension %>"><%= most_viewed[i].image_code %>.<%= most_viewed[i].extension %></a><%}else{%><%= most_viewed[i].image_code %>.<%= most_viewed[i].extension %><% } %></td></tr>
-<%}%>
-</table>
+    <h1>AmeoTrack File Uploader Analytics</h1>
+    <h2>Most accessed files</h2>
+    <table>
+        <tr>
+            <th>Accesses</th>
+            <th>File</th>
+        </tr>
+        <% for(i=0; i<most_viewed.length-1; i++){%>
+            <tr>
+                <td style="border: 1px solid black;">
+                    <%= most_viewed[i].amount %>
+                </td>
+                <td style="border: 1px solid black;">
+                    <%if(most_viewed[i].extension != "DEL"){%>
+                        <a href="https://ameo.link/u/<%= most_viewed[i].image_code %>.<%= most_viewed[i].extension %>">
+                            <%= most_viewed[i].image_code %>.
+                                <%= most_viewed[i].extension %>
+                        </a>
+                        <%}else{%>
+                            <%= most_viewed[i].image_code %>.
+                                <%= most_viewed[i].extension %>
+                                    <% } %>
+                </td>
+            </tr>
+            <%}%>
+    </table>
 </body>
+
 </html>

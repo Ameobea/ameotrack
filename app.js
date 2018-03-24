@@ -36,26 +36,38 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(cookieParser());
 app.use(bp.json());
-app.use(bp.urlencoded({extended: false}));
+app.use(bp.urlencoded({ extended: false }));
 
 app.use(function(req, res, next) {
-  if(req.url.substr(-1) == '/' && req.url.length > 1){
+  if (req.url.substr(-1) == '/' && req.url.length > 1) {
     res.redirect(301, '/u' + req.url.slice(0, -1));
-  }else{
+  } else {
     next();
   }
 });
 
-app.get('/fireworks', function(req, res, next){
-  res.sendFile('index.html', {root: __dirname + '/public/fireworks/'});
-  const get_path = `/t?type=event&category=ameotrack_fireworks&password=${conf.event_password}&data={}`;
-  var req1 = http.request({host: 'ip.ameobea.me', port: 3000, path: get_path}, function(res){/*console.log(res);*/});
+app.get('/fireworks', function(req, res, next) {
+  res.sendFile('index.html', { root: __dirname + '/public/fireworks/' });
+  const get_path = `/t?type=event&category=ameotrack_fireworks&password=${
+    conf.event_password
+  }&data={}`;
+  var req1 = http.request(
+    { host: 'ip.ameobea.me', port: 3000, path: get_path },
+    function(res) {
+      /*console.log(res);*/
+    }
+  );
   req1.end();
-  req1.on('connect', function(res, socket, head){
+  req1.on('connect', function(res, socket, head) {
     console.log('connected!');
   });
 });
-app.use(express.static(path.join(__dirname, 'public'), {redirect: false, index: 'index.html'}));
+app.use(
+  express.static(path.join(__dirname, 'public'), {
+    redirect: false,
+    index: 'index.html',
+  })
+);
 
 app.use('/', routes);
 app.use('/upload', upload);
@@ -69,39 +81,66 @@ app.use('/ot', oneTimePortal);
 app.use('/bin', ameoBin);
 app.use('/feedback', feedback);
 
-app.use(express.static(__dirname + '/uploads', {
-  callback: function(req){
-    const get_path = `/t?type=event&category=ameotrack_image&password=${conf.event_password}&data={image-name:"`.concat(req.url.substring(1,req.url.length).split('.')[0],'"}');
-    var req1 = http.request({host: 'ip.ameobea.me', port: 3000, path: get_path}, function(res){/*console.log(res);*/});
-    req1.end();
-    req1.on('connect', function(res, socket, head){
-      console.log('connected!');
-    });
-    dbq.deleteIfOneTimeView(req.url.substring(1,req.url.length).split('.')[0]);
-    dbq.logFileAccess(req.url.substring(1,req.url.length).split('.')[0], req.headers['x-forwarded-for'], req.headers['cf-ipcountry'], req.headers['user-agent']);
-  }
-}));
-
-var socket_server = ws.createServer(function(conn){
-  socket_server.on('error', function(err){
-    console.log('Websocket server had some sort of error:');
-    console.log(err);
-  });
-  conn.once('text', function(input){
-    try {
-      input = JSON.parse(input);
-      if(input.type && input.category && input.password && input.data){
-        if(input.password == conf.event_password){
-          socket_server.connections.forEach(function(connection){
-            connection.sendText(JSON.stringify({type: 'event', category: input.category, data: input.data}));
-          });
+app.use(
+  express.static(__dirname + '/uploads', {
+    callback: function(req) {
+      const get_path = `/t?type=event&category=ameotrack_image&password=${
+        conf.event_password
+      }&data={image-name:"`.concat(
+        req.url.substring(1, req.url.length).split('.')[0],
+        '"}'
+      );
+      var req1 = http.request(
+        { host: 'ip.ameobea.me', port: 3000, path: get_path },
+        function(res) {
+          /*console.log(res);*/
         }
+      );
+      req1.end();
+      req1.on('connect', function(res, socket, head) {
+        console.log('connected!');
+      });
+      dbq.deleteIfOneTimeView(
+        req.url.substring(1, req.url.length).split('.')[0]
+      );
+      dbq.logFileAccess(
+        req.url.substring(1, req.url.length).split('.')[0],
+        req.headers['x-forwarded-for'],
+        req.headers['cf-ipcountry'],
+        req.headers['user-agent']
+      );
+    },
+  })
+);
+
+var socket_server = ws
+  .createServer(function(conn) {
+    socket_server.on('error', function(err) {
+      console.log('Websocket server had some sort of error:');
+      console.log(err);
+    });
+    conn.once('text', function(input) {
+      try {
+        input = JSON.parse(input);
+        if (input.type && input.category && input.password && input.data) {
+          if (input.password == conf.event_password) {
+            socket_server.connections.forEach(function(connection) {
+              connection.sendText(
+                JSON.stringify({
+                  type: 'event',
+                  category: input.category,
+                  data: input.data,
+                })
+              );
+            });
+          }
+        }
+      } catch (e) {
+        console.log(e);
       }
-    } catch (e) {
-      console.log(e);
-    }
-  });
-}).listen(7507);
+    });
+  })
+  .listen(7507);
 
 // error handlers
 
@@ -113,7 +152,7 @@ if (app.get('env') === 'development') {
     console.log(err.stack);
     res.render('error', {
       message: err.message,
-      error: err
+      error: err,
     });
   });
 }
@@ -124,7 +163,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,
-    error: {}
+    error: {},
   });
 });
 
@@ -132,17 +171,17 @@ app.use(function(req, res, next) {
   res.status(404).send('Resource not found');
 });
 
-schedule.scheduleJob('1 * * * * *', function(){
-  dbq.checkExpiredFiles(function(rows){
-    if(typeof rows == 'undefined'){
+schedule.scheduleJob('1 * * * * *', function() {
+  dbq.checkExpiredFiles(function(rows) {
+    if (typeof rows == 'undefined') {
       return;
     }
-    for(var i = 0; i < rows.length; i++){
-      dbq.doDelete(rows[i].shortname, conf.password, function(status){
+    for (var i = 0; i < rows.length; i++) {
+      dbq.doDelete(rows[i].shortname, conf.password, function(status) {
         console.log(status);
       });
     }
   });
 });
 
-app.listen(3000, console.log("Ameotrack launched on port 3000"));
+app.listen(3000, console.log('Ameotrack launched on port 3000'));

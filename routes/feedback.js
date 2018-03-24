@@ -4,7 +4,10 @@ const express = require('express');
 const router = express.Router();
 
 const conf = require('../helpers/conf');
-const mailgun = require('mailgun-js')({apiKey: conf.mailgunKey, domain: conf.mailgunDomain});
+const mailgun = require('mailgun-js')({
+  apiKey: conf.mailgunKey,
+  domain: conf.mailgunDomain,
+});
 
 /**
  * Required POST Parameters:
@@ -13,7 +16,7 @@ const mailgun = require('mailgun-js')({apiKey: conf.mailgunKey, domain: conf.mai
  * message: Message containing the content of the feedback that will be included in the email
  */
 router.post('/', (req, res, next) => {
-  if(req.body.password == conf.feedbackPassword) {
+  if (req.body.password == conf.feedbackPassword) {
     const data = {
       from: `AmeoTrack Feedback Sender <feedback@${conf.mailgunDomain}>`,
       to: conf.feedbackRecipient,

@@ -1,40 +1,48 @@
 <html>
+
 <head>
-<title>Ameolink Manual Upload</title>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-<script type="text/javascript">
-$(document).ready(()=>{
-  $("form").submit(function(event){
-    event.preventDefault();
+  <title>Ameolink Manual Upload</title>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(() => {
+      $("form").submit(function (event) {
+        event.preventDefault();
 
-    var formData = new FormData($(this)[0]);
+        var formData = new FormData($(this)[0]);
 
-    $.ajax({
-      url: 'upload',
-      type: 'POST',
-      data: formData,
-      async: false,
-      cache: false,
-      contentType: false,
-      processData: false,
-      success: function (returndata) {
-        $("#result").html(returndata);
-      }
+        $.ajax({
+          url: 'upload',
+          type: 'POST',
+          data: formData,
+          async: false,
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function (returndata) {
+            $("#result").html(returndata);
+          }
+        });
+      });
     });
-  });
-});
-</script>
+  </script>
 </head>
+
 <body>
-<h1>Manual File Upload</h1>
-<form>
-<input id="file" type="file" name="file"><br>
-One-time (blank/1) <input type="text" name="oneTime" value=""><br>
-Secret (blank/1) <input type="text" name="secret" value=""><br>
-Password <input type="password" name="password"><br>
-Expiry <input type="text" name="expiry" placeholder="365"><br>
-<input type="submit" value="Submit">
-</form>
-<div id="result"></div>
+  <h1>Manual File Upload</h1>
+  <form>
+    <input id="file" type="file" name="file">
+    <br> One-time (blank/1)
+    <input type="text" name="oneTime" value="">
+    <br> Secret (blank/1)
+    <input type="text" name="secret" value="">
+    <br> Password
+    <input type="password" name="password">
+    <br> Expiry
+    <input type="text" name="expiry" placeholder="365">
+    <br>
+    <input type="submit" value="Submit">
+  </form>
+  <div id="result"></div>
 </body>
+
 </html>

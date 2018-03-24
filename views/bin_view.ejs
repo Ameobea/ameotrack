@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>AmeoBin</title>
   <style type="text/css" media="screen">
@@ -14,39 +15,47 @@
       color: white;
     }
   </style>
-  <script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0="
+    crossorigin="anonymous"></script>
   <script type="text/javascript">
-  $(document).ready(function(){
-    $("#save").click(function(){
-      var editor2 = ace.edit("editor");
-      $("#hiddenText").val(editor2.getValue());
-      $("#mainForm").submit();
+    $(document).ready(function () {
+      $("#save").click(function () {
+        var editor2 = ace.edit("editor");
+        $("#hiddenText").val(editor2.getValue());
+        $("#mainForm").submit();
+      });
     });
-  });
   </script>
 </head>
+
 <body>
-<div>
-<div id="editor"><%= text %></div>
-</div>
-<div>
-<form id="mainForm" action="" method="POST">
-<input type="hidden" name="text" id="hiddenText">
-Password: <input type="password" name="password" id="password" style="display: inline-block;">  Filename: <input type="text" name="filename" id="filename" value="<%= filename %>" style="display: inline-block;">
-<br><input type="checkbox" name="secret">Secret  <input type="button" id="save" value="Save" style="display: inline-block;">
-</form>
-</div>
-<script type="text/javascript" src="<%= back %>/sources/ace-builds/src-min-noconflict/ace.js"></script>
-<script type="text/javascript" src="<%= back %>/sources/ace-builds/src-min-noconflict/ext-modelist.js"></script>
-<script>
-$(document).ready(function(){
-  var editor = ace.edit("editor");
-  editor.setOption("wrap", true);
-  var modelist = ace.require("ace/ext/modelist");
-  var mode = modelist.getModeForPath("<%= filename %>");
-  editor.setTheme("ace/theme/twilight");
-  editor.getSession().setMode(mode.mode);
-});
-</script>
+  <div>
+    <div id="editor">
+      <%= text %>
+    </div>
+  </div>
+  <div>
+    <form id="mainForm" action="" method="POST">
+      <input type="hidden" name="text" id="hiddenText"> Password:
+      <input type="password" name="password" id="password" style="display: inline-block;"> Filename:
+      <input type="text" name="filename" id="filename" value="<%= filename %>" style="display: inline-block;">
+      <br>
+      <input type="checkbox" name="secret">Secret
+      <input type="button" id="save" value="Save" style="display: inline-block;">
+    </form>
+  </div>
+  <script type="text/javascript" src="<%= back %>/sources/ace-builds/src-min-noconflict/ace.js"></script>
+  <script type="text/javascript" src="<%= back %>/sources/ace-builds/src-min-noconflict/ext-modelist.js"></script>
+  <script>
+    $(document).ready(function () {
+      var editor = ace.edit("editor");
+      editor.setOption("wrap", true);
+      var modelist = ace.require("ace/ext/modelist");
+      var mode = modelist.getModeForPath("<%= filename %>");
+      editor.setTheme("ace/theme/twilight");
+      editor.getSession().setMode(mode.mode);
+    });
+  </script>
 </body>
+
 </html>

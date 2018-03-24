@@ -6,9 +6,9 @@
     "semi": [2, "always"],
     "comma-dangle": [2, "only-multiline"],
     "no-console": 0,
-    "no-unused-vars": [2, {"vars": "all", "args": "none"}],
-    "no-multiple-empty-lines": [2, {"max": 1}],
-    "prefer-const": 2,
+    "no-unused-vars": [2, { "vars": "all", "args": "none" }],
+    "no-multiple-empty-lines": [2, { "max": 1 }],
+    "prefer-const": 2
   },
   "env": {
     "es6": false,
@@ -17,7 +17,7 @@
   },
   "extends": ["eslint:recommended"],
   "parserOptions": {
-    "sourceType": "module",
+    "sourceType": "module"
   },
   "globals": {
     "require": true,
