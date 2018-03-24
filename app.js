@@ -16,11 +16,11 @@ const manager = require('./routes/manage');
 const oneTimePortal = require('./routes/oneTime');
 const ameoBin = require('./routes/bin');
 const feedback = require('./routes/feedback');
+const remind = require('./routes/remind');
 
 const journals = require('./routes/journal.js');
 const file_analytics = require('./routes/f_analytics.js');
 const tracker = require('./routes/tracker.js');
-const broker = require('./routes/broker.js');
 const dbq = require('./helpers/dbQuery.js');
 const conf = require('./helpers/conf.js');
 
@@ -76,10 +76,10 @@ app.use('/manage', manager);
 app.use('/j', journals);
 app.use('/analytics', file_analytics);
 app.use('/t', tracker);
-app.use('/1broker', broker);
 app.use('/ot', oneTimePortal);
 app.use('/bin', ameoBin);
 app.use('/feedback', feedback);
+app.use('/remind', remind);
 
 app.use(
   express.static(__dirname + '/uploads', {

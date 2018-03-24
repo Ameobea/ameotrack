@@ -10,7 +10,6 @@ conf.dbDatabase = 'database';
 
 conf.encryptionPassword = 'Unused right now';
 conf.bannedIps = ['174.16.146.39', '99.66.117.246'];
-conf.broker_key = '1broker API key';
 conf.fAnalyticsPwd = 'password for viewing analytics and image management';
 
 conf.feedbackPassword = 'password for submitting feedback to be emailed to me';
