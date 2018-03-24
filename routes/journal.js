@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -11,7 +13,7 @@ router.use(
     limits: {
       fileSize: 1505000000, //Max file size 1505MB
     },
-    onFileSizeLimit: function(file) {
+    onFileSizeLimit: file => {
       //Delete partially written files that exceed the maximum file size
       console.log('Max file size exceeded!');
       fs.unlink('./' + file.path);
@@ -19,31 +21,22 @@ router.use(
   })
 );
 
-router.get('/upload', function(req, res, next) {
-  res.send('Yeah, this is the right place.  Now try a POST!');
-});
+router.get('/upload', (req, res, next) =>
+  res.send('Yeah, this is the right place.  Now try a POST!')
+);
 
-router.post('/upload', function(req, res, next) {
-  if (req.body.password == conf.password) {
-    var muhFile = req.files.file;
-    if (typeof muhFile === 'undefined') {
-      res.send('No files was supplied;');
-      return;
-    }
-
-    if (typeof req.body.dateOverride != 'undefined') {
-      //should be in format Wed, 09 Aug 1995 00:00:00 GMT
-      var uploadDate = new Date(Date.parse(req.body.dateOverride));
-    } else {
-      var uploadDate = new Date(Date.now());
-    }
-
-    dbq.saveJournal(muhFile, uploadDate, req.body.encrypt, function(status) {
-      res.send(status);
-    });
-  } else {
-    res.send('Invalid password!');
+router.post('/upload', (req, res, next) => {
+  if (req.body.password !== conf.password) {
+    return res.send('Invalid password!');
   }
+
+  const uploadedFile = req.files.file;
+  if (!uploadedFile) {
+    return res.send('No files was supplied;');
+  }
+
+  const uploadDate = new Date(req.body.dateOverride);
+  dbq.saveJournal(uploadedFile, uploadDate, req.body.encrypt, res.send);
 });
 
 module.exports = router;

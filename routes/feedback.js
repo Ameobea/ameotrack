@@ -4,10 +4,7 @@ const express = require('express');
 const router = express.Router();
 
 const conf = require('../helpers/conf');
-const mailgun = require('mailgun-js')({
-  apiKey: conf.mailgunKey,
-  domain: conf.mailgunDomain,
-});
+const { sendEmail } = require('../helpers/email');
 
 /**
  * Required POST Parameters:
@@ -16,20 +13,23 @@ const mailgun = require('mailgun-js')({
  * message: Message containing the content of the feedback that will be included in the email
  */
 router.post('/', (req, res, next) => {
-  if (req.body.password == conf.feedbackPassword) {
-    const data = {
-      from: `AmeoTrack Feedback Sender <feedback@${conf.mailgunDomain}>`,
-      to: conf.feedbackRecipient,
-      subject: `${req.body.appName} Feedback`,
-      text: `Email: ${req.body.email}\n\nMessage:\n${req.body.message}`,
-    };
-
-    mailgun.messages().send(data, (err, body) => {
-      res.send(JSON.stringify(body));
-    });
-  } else {
-    res.render('wrong_password');
+  if (req.body.password !== conf.feedbackPassword) {
+    return res.render('wrong_password');
   }
+
+  const data = {
+    from: `AmeoTrack Feedback Sender <feedback@${conf.mailgunDomain}>`,
+    to: conf.feedbackRecipient,
+    subject: `${req.body.appName} Feedback`,
+    text: `Email: ${req.body.email}\n\nMessage:\n${req.body.message}`,
+  };
+
+  sendEmail(data)
+    .then(body => res.send(JSON.stringify(body)))
+    .catch(({ err, body }) => {
+      console.error(`Error while sending mail via Mailgun: ${err}`);
+      res.send(body);
+    });
 });
 
 module.exports = router;

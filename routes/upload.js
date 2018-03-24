@@ -12,7 +12,7 @@ router.use(
     limits: {
       fileSize: 2e10, // Max file size 20GB
     },
-    onFileSizeLimit: function(file) {
+    onFileSizeLimit: file => {
       // Delete partially written files that exceed the maximum file size
       console.log('Max file size exceeded!');
       fs.unlink('./' + file.path);
@@ -25,88 +25,47 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', function(req, res) {
-  var muhFile = req.files.file;
-  if (typeof muhFile === 'undefined') {
-    res.send('No file was supplied;');
-    return;
+  const muhFile = req.files.file;
+  if (!muhFile) {
+    return res.send('No file was supplied;');
   }
-  var spl = req.files.file.name.split('.');
-  hasher({ files: ['./uploads/'.concat(muhFile.name)] }, function(error, hash) {
-    var expiry = req.body.expiry;
-    var source = req.body.source || 'manual';
-    if (typeof expiry === 'undefined') {
-      expiry = -1;
-    }
-    if (req.body.oneTime) {
-      dbq.doOneViewFileUpload(
-        spl[1],
-        hash,
-        expiry,
-        muhFile.size,
-        req.body.password,
-        source,
-        function(shortName, path) {
-          if (
-            shortName !== 'Invalid password!' &&
-            typeof shortName !== 'undefined'
-          ) {
-            fs.rename('./uploads/'.concat(muhFile.name), path, function(err) {
-              if (err) {
-                console.log('error renaming file!');
-                console.log(err);
-              }
-            });
+
+  const extension = req.files.file.name.split('.')[1];
+  const filePath = './uploads/'.concat(muhFile.name);
+  hasher({ files: [filePath] }, (error, hash) => {
+    const { expiry = -1, source = 'manual' } = req.body;
+
+    const args = [
+      extension,
+      hash,
+      expiry,
+      muhFile.size,
+      req.body.password,
+      source,
+    ];
+
+    const uploadCb = (shortName, newPath) => {
+      if (
+        shortName !== 'Invalid password!' &&
+        typeof shortName !== 'undefined'
+      ) {
+        fs.rename(filePath, newPath, err => {
+          if (err) {
+            console.log('error renaming file!');
+            console.log(err);
           }
-          res.send('https://ameo.link/u/ot/'.concat(shortName));
-        }
-      );
-    } else if (req.body.secret) {
-      dbq.doSecretFileUpload(
-        spl[1],
-        hash,
-        expiry,
-        muhFile.size,
-        req.body.password,
-        source,
-        function(shortName, path) {
-          if (
-            shortName !== 'Invalid password!' &&
-            typeof shortName !== 'undefined'
-          ) {
-            fs.rename('./uploads/'.concat(muhFile.name), path, function(err) {
-              if (err) {
-                console.log('error renaming file!');
-                console.log(err);
-              }
-            });
-          }
-          res.send('https://ameo.link/u/'.concat(shortName));
-        }
-      );
-    } else {
-      dbq.doFileUpload(
-        spl[1],
-        hash,
-        expiry,
-        muhFile.size,
-        req.body.password,
-        source,
-        function(shortName, path) {
-          if (
-            shortName !== 'Invalid password!' &&
-            typeof shortName !== 'undefined'
-          ) {
-            fs.rename('./uploads/'.concat(muhFile.name), path, function(err) {
-              if (err) {
-                console.log('error renaming file!');
-                console.log(err);
-              }
-            });
-          }
-          res.send('https://ameo.link/u/'.concat(shortName));
-        }
-      );
-    }
+        });
+      }
+
+      res.send('https://ameo.link/u/'.concat(shortName));
+    };
+
+    const uploadOptions = {
+      secret: req.body.secret,
+      oneTime: req.body.oneTime,
+    };
+
+    dbq.uploadFile(uploadOptions)(...args, uploadCb);
   });
 });
 

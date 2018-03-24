@@ -1,8 +1,7 @@
-var bcrypt = require('bcrypt-nodejs');
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-var dbq = require('../helpers/dbQuery.js');
+const dbq = require('../helpers/dbQuery.js');
 
 router.get('/', (req, res, next) => {
   res.render('bin_view', { text: '', filename: 'file.txt', back: '.' });

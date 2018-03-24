@@ -16,19 +16,15 @@ router.get('/', (req, res, next) => {
 });
 
 router.get('/get', (req, res, next) => {
-  if (req.query.password == conf.fAnalyticsPwd) {
-    dbq.list_images(req.query.start, req.query.end).then(
-      urls => {
-        res.send(urls);
-      },
-      () => {
-        // dbq didn't like our start/end or some kind of db error
-        res.render('error');
-      }
-    );
-  } else {
-    res.render('wrong_password');
+  if (req.query.password !== conf.fAnalyticsPwd) {
+    return res.render('wrong_password');
   }
+
+  dbq
+    .list_images(req.query.start, req.query.end)
+    .then(res.send)
+    // dbq didn't like our start/end or some kind of db error
+    .catch(() => res.render('error'));
 });
 
 module.exports = router;

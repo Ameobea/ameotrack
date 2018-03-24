@@ -5,10 +5,11 @@ const R = require('ramda');
 const router = express.Router();
 
 const { parseDateString } = require('../helpers/rustLib');
+const { createReminder } = require('../helpers/schedule');
 
 const preprocessDateString = R.pipe(
   s => s.toLowerCase(),
-  R.replace(/ (at)|(around)/, ''),
+  R.replace(/ (at)|(around)|(in)/, ''),
   R.replace(/midnight/, '12am'),
   R.replace(/morning/, '10am'),
   R.replace(/evening/, '6pm'),
@@ -16,7 +17,12 @@ const preprocessDateString = R.pipe(
 );
 
 router.get('/', (req, res) => {
-  const dateString = req.query.string;
+  const { dateString, message } = req.query;
+  if (!dateString) {
+    return res.json({ success: false, reason: 'No date string provided!' });
+  } else if (!message) {
+    return res.json({ success: false, reason: 'No message provided!' });
+  }
 
   // First try to parse normally
   const parseResult = Try.of(() => {
@@ -31,8 +37,18 @@ router.get('/', (req, res) => {
   });
 
   const serializedResponse = parseResult
-    .map(timestamp => ({ success: true, timestamp }))
-    .getOrElse({ success: false });
+    .map(timestamp => {
+      createReminder(timestamp, message);
+      return {
+        success: true,
+        timestamp,
+        message: 'Reminder successfully scheduled!',
+      };
+    })
+    .getOrElse({
+      success: false,
+      reason: 'Unable to parse provided date string',
+    });
 
   res.json(serializedResponse);
 });

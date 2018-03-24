@@ -1,13 +1,27 @@
 const schedule = require('node-schedule');
 
+const conf = require('../helpers/conf');
 const dbq = require('../helpers/dbQuery');
-const reminders = require('../helpers/dbFunctions/reminders');
+const remindersDb = require('../helpers/dbFunctions/reminders');
 const dbHelpers = require('../helpers/dbFunctions/helpers');
+const { sendEmail } = require('../helpers/email');
 
-const sendReminder = message => {
-  console.log(`Sending reminder: ${message}`);
-  // TODO
-};
+const sendReminder = message =>
+  sendEmail({
+    to: conf.feedbackRecipient,
+    from: `AmeoTrack Reminders <reminders@${conf.mailgunDomain}>`,
+    subject: `REMINDER: message`,
+    text: message,
+  });
+
+/**
+ * Registers a reminder with `node-schedule`
+ */
+const registerReminder = ({ unix_timestamp, message }) =>
+  schedule.scheduleJob(new Date(unix_timestamp * 1000), () =>
+    sendReminder(message)
+  );
+exports.registerReminder = registerReminder;
 
 exports.init = async () => {
   // Delete expired files every minute
@@ -25,23 +39,25 @@ exports.init = async () => {
 
   // Schedule reminders
   const conn = await dbHelpers.dbConnectPromise();
-  var loadedReminders;
+  let loadedReminders;
   try {
-    loadedReminders = await reminders.loadReminders(conn);
-  } catch (e) {
+    loadedReminders = await remindersDb.loadReminders(conn);
+  } catch (err) {
     return console.error(`Error loading reminders from database: ${err}`);
   }
 
   loadedReminders.length > 0 &&
     console.log(
       `Scheduling ${loadedReminders.length} reminder${
-        loadedReminders.length > 1 ? s : ''
+        loadedReminders.length > 1 ? 's' : ''
       }...`
     );
 
-  loadedReminders.forEach(({ unix_timestamp, message }) => {
-    schedule.scheduleJob(new Date(unix_timestamp * 1000), () =>
-      sendReminder(message)
-    );
-  });
+  loadedReminders.forEach(registerReminder);
+};
+
+exports.createReminder = async (unix_timestamp, message) => {
+  const conn = await dbHelpers.dbConnectPromise();
+  await remindersDb.setReminder(conn, unix_timestamp, message);
+  registerReminder({ unix_timestamp, message });
 };

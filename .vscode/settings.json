@@ -3,5 +3,6 @@
   "prettier.singleQuote": true,
   "prettier.trailingComma": "es5",
   "prettier.printWidth": 80,
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "eslint.packageManager": "yarn"
 }

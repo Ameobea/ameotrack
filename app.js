@@ -1,5 +1,3 @@
-'use strict';
-
 const express = require('express');
 const path = require('path');
 const logger = require('morgan');
@@ -38,7 +36,7 @@ app.use(cookieParser());
 app.use(bp.json());
 app.use(bp.urlencoded({ extended: false }));
 
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   if (req.url.substr(-1) == '/' && req.url.length > 1) {
     res.redirect(301, '/u' + req.url.slice(0, -1));
   } else {
@@ -46,13 +44,13 @@ app.use(function(req, res, next) {
   }
 });
 
-app.get('/fireworks', function(req, res, next) {
+app.get('/fireworks', (req, res, next) => {
   res.sendFile('index.html', { root: __dirname + '/public/fireworks/' });
   const get_path = `/t?type=event&category=ameotrack_fireworks&password=${
     conf.event_password
   }&data={}`;
-  var req1 = http.request({ host: 'ameo.link', port: 3000, path: get_path });
-  req1.end();
+
+  http.request({ host: 'ameo.link', port: 3000, path: get_path }).end();
 });
 app.use(
   express.static(path.join(__dirname, 'public'), {
@@ -99,15 +97,12 @@ app.use(
   })
 );
 
-var socket_server = ws
-  .createServer(function(conn) {
-    socket_server.on('error', err => {
-      console.log('Websocket server had some sort of error:');
-      console.log(err);
-    });
+const socket_server = ws
+  .createServer(conn => {
     conn.once('text', input => {
       try {
         input = JSON.parse(input);
+
         if (
           input.type &&
           input.category &&
@@ -115,15 +110,15 @@ var socket_server = ws
           input.data &&
           input.password == conf.event_password
         ) {
-          socket_server.connections.forEach(connection => {
+          socket_server.connections.forEach(connection =>
             connection.sendText(
               JSON.stringify({
                 type: 'event',
                 category: input.category,
                 data: input.data,
               })
-            );
-          });
+            )
+          );
         }
       } catch (e) {
         console.log(e);
@@ -131,6 +126,11 @@ var socket_server = ws
     });
   })
   .listen(7507);
+
+socket_server.on('error', err => {
+  console.log('Websocket server had some sort of error:');
+  console.log(err);
+});
 
 // error handlers
 

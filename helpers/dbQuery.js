@@ -28,8 +28,8 @@ dbq.doDelete = (shortname, password, callback) => {
   });
 };
 
-dbq.deleteIfOneTimeView = function(shortname) {
-  helpers.dbConnect(function(connection) {
+dbq.deleteIfOneTimeView = shortname =>
+  helpers.dbConnect(connection => {
     const queryString =
       'SELECT `one_time` FROM `hostedFiles` WHERE `shortname` = ?';
     connection.query(queryString, [shortname], (err, oneTime) => {
@@ -42,7 +42,6 @@ dbq.deleteIfOneTimeView = function(shortname) {
       connection.end();
     });
   });
-};
 
 dbq.logFileAccess = (image_code, ip, country_code, user_agent) => {
   helpers.dbConnect(connection => {
@@ -73,25 +72,24 @@ dbq.logFileAccess = (image_code, ip, country_code, user_agent) => {
   });
 };
 
-dbq.startFileUpload = function(
-  ext,
+dbq.startFileUpload = (
+  _ext,
   hash,
   expiry,
   size,
   password,
   source,
   callback
-) {
+) => {
   if (password !== conf.password) {
     return;
   }
-  var dotOrNaw = '.';
-  if (typeof ext == 'undefined') {
-    //remove extension if none is provided
-    ext = '';
-    dotOrNaw = '';
-  }
-  helpers.dbConnect(function(connection) {
+
+  const { ext, dotOrNaw } = _ext
+    ? { dotOrNaw: '.', ext: _ext }
+    : { dotOrNaw: '', ext: '' };
+
+  helpers.dbConnect(connection => {
     // Unique identifier for new file rows, allowing for concurrent uploads
     const res = Math.random() + Math.random() + Math.random();
     const query = 'SELECT * FROM `hostedFiles` WHERE `hash` = ?';
@@ -102,11 +100,11 @@ dbq.startFileUpload = function(
         console.log(err);
       } else {
         if (existingFile[0]) {
-          return callback(existingFile, connection, dorOrNaw, res);
+          return callback(existingFile, connection, dotOrNaw, res);
         }
 
         // Insert placeholder row
-        var expiryD = null;
+        let expiryD = null;
         if (expiry != -1) {
           expiryD = new Date();
           expiryD.setTime(expiryD.getTime() + expiry * 86400000);
@@ -121,29 +119,33 @@ dbq.startFileUpload = function(
           expiry: expiryD,
           source,
         };
-        connection.query('INSERT INTO `hostedFiles` SET ?', (err, result) => {
-          if (err) {
-            console.log('error inserting placeholder into files database.');
-            console.err(err.stack);
-            return;
-          }
-
-          // Get the id of the placeholder row
-          connection.query(
-            'SELECT * FROM `hostedFiles` WHERE `shortname` = ?',
-            [res],
-            (err, placeholder) => {
-              callback(placeholder, connection, dotOrNaw, res);
+        connection.query(
+          'INSERT INTO `hostedFiles` SET ?',
+          values,
+          (err, result) => {
+            if (err) {
+              console.log('error inserting placeholder into files database.');
+              console.err(err.stack);
+              return;
             }
-          );
-        });
+
+            // Get the id of the placeholder row
+            connection.query(
+              'SELECT * FROM `hostedFiles` WHERE `shortname` = ?',
+              [res],
+              (err, placeholder) => {
+                callback(placeholder, connection, dotOrNaw, res);
+              }
+            );
+          }
+        );
       }
     });
   });
 };
 
-const doFileUploadInner = ({ oneTime = false, secret = false }) => (
-  ext,
+dbq.uploadFile = ({ oneTime = false, secret = false }) => (
+  extension,
   hash,
   expiry,
   size,
@@ -152,7 +154,7 @@ const doFileUploadInner = ({ oneTime = false, secret = false }) => (
   cb
 ) =>
   dbq.startFileUpload(
-    ext,
+    extension,
     hash,
     expiry,
     size,
@@ -160,7 +162,8 @@ const doFileUploadInner = ({ oneTime = false, secret = false }) => (
     source,
     (placeholder, connection, dorOrNaw, res) => {
       const shortName = secret ? hash : placeholder[0].id.toString(36);
-      const path = './uploads/'.concat(shortName, dotOrNaw, ext);
+      const dotOrNaw = extension ? '.' : '';
+      const path = './uploads/'.concat(shortName, dotOrNaw, extension);
       const values = {
         shortname: shortName,
         path,
@@ -168,7 +171,7 @@ const doFileUploadInner = ({ oneTime = false, secret = false }) => (
       };
 
       connection.query(
-        `UPDATE \`hostedFiles\` SET ? WHERE \`shortname\` = "${shortname}";`,
+        `UPDATE \`hostedFiles\` SET ? WHERE \`shortname\` = "${shortName}";`,
         values,
         (err, res) => {
           connection.destroy();
@@ -177,20 +180,12 @@ const doFileUploadInner = ({ oneTime = false, secret = false }) => (
             console.log(err.stack);
           } else {
             // Return the filename of the newly uploaded file to the upload route
-            cb(shortName.concat(dotOrNaw, ext), path);
+            cb(shortName.concat(dotOrNaw, extension), path);
           }
         }
       );
     }
   );
-
-dbq.doFileUpload = (...args) => doFileUploadInner({})(...args);
-
-dbq.doOneViewFileUpload = (...args) =>
-  doFileUploadInner({ oneTime: true })(...args);
-
-dbq.doSecretFileUpload = (...args) =>
-  doFileUploadInner({ secret: true })(...args);
 
 dbq.checkExpiredFiles = callback => {
   helpers.dbConnect(connection => {
@@ -206,7 +201,7 @@ dbq.checkExpiredFiles = callback => {
 
 dbq.saveJournal = (muhFile, uploadDate, encrypt, callback) => {
   helpers.dbConnect(connection => {
-    const oldsavePath = `./journals/${uploadDate.getFullYear()}/${uploadDate.getMonth()}/${uploadDate.getDate()}/${uploadDate.getHours()}-${uploadDate.getMinutes()}-${uploadDate.getSeconds()}.${
+    const oldSavePath = `./journals/${uploadDate.getFullYear()}/${uploadDate.getMonth()}/${uploadDate.getDate()}/${uploadDate.getHours()}-${uploadDate.getMinutes()}-${uploadDate.getSeconds()}.${
       muhFile.extension
     }`;
 
@@ -247,10 +242,11 @@ dbq.saveBin = (shortname, password, text, filename, secret, cb) => {
       [shortname],
       (err, existing) => {
         if (shortname == '') {
-          var sha256 = crypto
+          const sha256 = crypto
             .createHash('sha256')
             .update(text)
             .digest('hex');
+
           dbq.startFileUpload(
             'ameobin',
             sha256,
@@ -318,16 +314,18 @@ dbq.list_images = (start, end) => {
       conn.query(query, [start, end], (err, res) => {
         if (err) {
           console.log(err);
-          r();
-        } else {
-          var urls = '[';
-          for (var i = 0; i < res.length; i++) {
-            urls += `"https://ameo.link/u/${res[i].shortname}.${
-              res[i].extension
-            }/", `;
-          }
-          f(urls + ']');
+          conn.end();
+          return r();
         }
+
+        let urls = '[';
+        for (let i = 0; i < res.length; i++) {
+          urls += `"https://ameo.link/u/${res[i].shortname}.${
+            res[i].extension
+          }/", `;
+        }
+        f(urls + ']');
+
         conn.end();
       });
     });

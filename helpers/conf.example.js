@@ -1,4 +1,4 @@
-var conf = exports;
+const conf = exports;
 
 conf.password = 'image upload password';
 conf.event_password = 'password for submitting analytics events';
