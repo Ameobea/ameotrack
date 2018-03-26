@@ -12,6 +12,7 @@ const preprocessDateString = R.pipe(
   R.replace(/ (at)|(around)|(in)/, ''),
   R.replace(/midnight/, '12am'),
   R.replace(/morning/, '10am'),
+  R.replace(/afternoon/, '3PM'),
   R.replace(/evening/, '6pm'),
   R.replace(/night/, '10pm')
 );
