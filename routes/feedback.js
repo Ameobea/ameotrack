@@ -1,7 +1,13 @@
 //! Used to send me emails from anywhere I have a feedback feature on my sites or applications
 
 const express = require('express');
+
+const corsMiddleware = require('../helpers/cors');
+
 const router = express.Router();
+
+// enable CORS
+router.use(corsMiddleware);
 
 const conf = require('../helpers/conf');
 const { sendEmail } = require('../helpers/email');
