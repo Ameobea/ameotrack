@@ -9,7 +9,7 @@ const { createReminder } = require('../helpers/schedule');
 
 const preprocessDateString = R.pipe(
   s => s.toLowerCase(),
-  R.replace(/ (at)|(around)|(in)/, ''),
+  R.replace(/ (?:(?:at)|(?:around)|(?:in)) /, ' '),
   R.replace(/midnight/, '12am'),
   R.replace(/morning/, '10am'),
   R.replace(/afternoon/, '3PM'),
