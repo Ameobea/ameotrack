@@ -71,31 +71,35 @@ app.use('/bin', ameoBin);
 app.use('/feedback', feedback);
 app.use('/remind', remind);
 
-app.use(
-  express.static(__dirname + '/uploads', {
-    callback: req => {
-      const fileStem = req.url.substring(1, req.url.length).split('.')[0];
-      const get_path = `/t?type=event&category=ameotrack_image&password=${
-        conf.event_password
-      }&data={image-name:"`.concat(fileStem, '"}');
+app.use('/*', (req, res, next) => {
+  const fileStem = req.originalUrl
+    .substring(1, req.originalUrl.length)
+    .split('.')[0];
 
-      const req1 = http.request({
-        host: 'ameo.link',
-        port: 3000,
-        path: get_path,
-      });
-      req1.end();
+  setTimeout(() => {
+    const get_path = `/t?type=event&category=ameotrack_image&password=${
+      conf.event_password
+    }&data={image-name:"`.concat(fileStem, '"}');
 
-      dbq.deleteIfOneTimeView(fileStem);
-      dbq.logFileAccess(
-        fileStem,
-        req.headers['x-forwarded-for'],
-        req.headers['cf-ipcountry'],
-        req.headers['user-agent']
-      );
-    },
-  })
-);
+    const req1 = http.request({
+      host: 'ameo.link',
+      port: 3000,
+      path: get_path,
+    });
+    req1.end();
+
+    dbq.deleteIfOneTimeView(fileStem);
+    dbq.logFileAccess(
+      fileStem,
+      req.headers['x-forwarded-for'],
+      req.headers['cf-ipcountry'],
+      req.headers['user-agent']
+    );
+  });
+
+  next();
+});
+app.use(express.static(__dirname + '/uploads'));
 
 const socket_server = ws
   .createServer(conn => {

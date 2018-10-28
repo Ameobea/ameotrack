@@ -33,7 +33,7 @@ router.post('/', (req, res) => {
   const extension = req.files.file.name.split('.')[1];
   const filePath = './uploads/'.concat(muhFile.name);
   hasher({ files: [filePath] }, (error, hash) => {
-    const { expiry = -1, source = 'manual' } = req.body;
+    const { expiry = -1, source = 'manual', oneTime, secret } = req.body;
 
     const args = [
       extension,
@@ -57,15 +57,10 @@ router.post('/', (req, res) => {
         });
       }
 
-      res.send('https://ameo.link/u/'.concat(shortName));
+      res.send(`https://ameo.link/u/${oneTime ? 'ot/' : ''}${shortName}`);
     };
 
-    const uploadOptions = {
-      secret: req.body.secret,
-      oneTime: req.body.oneTime,
-    };
-
-    dbq.uploadFile(uploadOptions)(...args, uploadCb);
+    dbq.uploadFile({ secret, oneTime })(...args, uploadCb);
   });
 });
 

@@ -21,9 +21,9 @@ dbq.doDelete = (shortname, password, callback) => {
           : "Error deleting file; either it doesn't exist or another error occured."
       );
 
-      connection.end(err => {
-        console.error('Error while closing MySQL Connection!');
-      });
+      connection.end(
+        err => err && console.error('Error while closing MySQL Connection!')
+      );
     });
   });
 };

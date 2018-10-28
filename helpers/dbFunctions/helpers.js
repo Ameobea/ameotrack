@@ -25,8 +25,6 @@ helpers.deleteRowByShortname = (shortname, connection, cb) => {
         'DELETE FROM `hostedFiles` WHERE `path` = ?',
         [result1[0].path],
         (err, result2) => {
-          connection.destroy();
-
           if (result2.affectedRows > 0) {
             fs.unlink(result1[0].path, () => {
               cb(true);
