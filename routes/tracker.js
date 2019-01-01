@@ -4,7 +4,7 @@ const router = express.Router();
 const ws = require('nodejs-websocket');
 
 router.get('/', function(req, res, next) {
-  const socket = ws.connect('ws://ip.ameobea.me:7507/');
+  const socket = ws.connect('ws://ameo.link:7507/');
 
   socket.on('error', function(err) {
     console.log('Tracker socket error: ');
