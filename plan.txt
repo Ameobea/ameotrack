@@ -5,7 +5,6 @@ Feature list
 -SMS/email reminder
 -image/file uploader/hoster (with automatic deletion, management features, editing, download, link shortner integration, etc)
 +Link shortner
--Journal upload/hosting/retrieval
 -personal analytics (reddit, youtube, twitter, etc.)
 -a-year-ago-today tool
 -Commonly used links

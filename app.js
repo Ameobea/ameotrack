@@ -14,7 +14,6 @@ const oneTimePortal = require('./routes/oneTime');
 const ameoBin = require('./routes/bin');
 const feedback = require('./routes/feedback');
 const remind = require('./routes/remind');
-const journals = require('./routes/journal');
 const file_analytics = require('./routes/f_analytics');
 const tracker = require('./routes/tracker');
 
@@ -29,8 +28,6 @@ app.engine('html', require('ejs').renderFile);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
 app.use(cookieParser());
 app.use(bp.json());
@@ -63,7 +60,6 @@ app.use('/', routes);
 app.use('/upload', upload);
 app.use('/delete', deleter);
 app.use('/manage', manager);
-app.use('/j', journals);
 app.use('/analytics', file_analytics);
 app.use('/t', tracker);
 app.use('/ot', oneTimePortal);
@@ -84,7 +80,7 @@ app.use('/*', (req, res, next) => {
     const req1 = http.request({
       host: 'ameo.link',
       port: 3000,
-      path: get_path,
+      path: encodeURI(get_path),
     });
     req1.end();
 

@@ -4,13 +4,11 @@ var multer = require('multer');
 
 var dbq = require('../helpers/dbQuery.js');
 
-router.use(multer());
-
 router.get('/', (req, res, next) =>
   res.send('Yeah, this is the right place.  Now try a POST!')
 );
 
-router.post('/', (req, res, next) => {
+router.delete('/', multer().any(), (req, res, next) => {
   if (!req.body.shortname) {
     return res.send('No shortname supplied!');
   }

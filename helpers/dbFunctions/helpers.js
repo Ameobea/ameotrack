@@ -76,22 +76,3 @@ helpers.getOpenFilename = async (path, callback) => {
     helpers.getOpenFilename(path, callback);
   }
 };
-
-helpers.renameJournal = async (oldPath, newPath, uploadDate, callback) => {
-  const yearFolderExists = await existsAsync(
-    `./journals/${uploadDate.getFullYear()}/`
-  );
-  !yearFolderExists && fs.mkdirSync(`./journals/${uploadDate.getFullYear()}/`);
-
-  const monthFolderPath = `./journals/${uploadDate.getFullYear()}/${uploadDate.getMonth() +
-    1}/`;
-  const monthFolderExists = await existsAsync(monthFolderPath);
-  !monthFolderExists && fs.mkdirSync(monthFolderPath);
-
-  const dayFolderPath = `./journals/${uploadDate.getFullYear()}/${uploadDate.getMonth() +
-    1}/${uploadDate.getDate()}/`;
-  const dayFolderExists = await existsAsync(dayFolderPath);
-  !dayFolderExists && fs.mkdirSync(dayFolderPath);
-
-  fs.rename(oldPath, newPath, callback);
-};

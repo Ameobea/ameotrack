@@ -3,46 +3,28 @@ const router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
 const hasher = require('hash-files');
+const bodyParser = require('body-parser');
 
 const dbq = require('../helpers/dbQuery.js');
-
-router.use(
-  multer({
-    dest: './uploads/',
-    limits: {
-      fileSize: 2e10, // Max file size 20GB
-    },
-    onFileSizeLimit: file => {
-      // Delete partially written files that exceed the maximum file size
-      console.log('Max file size exceeded!');
-      fs.unlink('./' + file.path);
-    },
-  })
-);
 
 router.get('/', (req, res, next) => {
   res.render('manual-upload');
 });
 
-router.post('/', (req, res) => {
-  const muhFile = req.files.file;
+const multerInstance = multer({
+  storage: multer.diskStorage({}),
+});
+
+router.post('/', multerInstance.any(), (req, res) => {
+  const muhFile = req.files.file || req.files[0];
   if (!muhFile) {
     return res.send('No file was supplied;');
   }
 
-  const extension = req.files.file.name.split('.')[1];
-  const filePath = './uploads/'.concat(muhFile.name);
+  const extension = muhFile.originalname.split('.')[1];
+  const filePath = muhFile.path;
   hasher({ files: [filePath] }, (error, hash) => {
     const { expiry = -1, source = 'manual', oneTime, secret } = req.body;
-
-    const args = [
-      extension,
-      hash,
-      expiry,
-      muhFile.size,
-      req.body.password,
-      source,
-    ];
 
     const uploadCb = (shortName, newPath) => {
       if (
@@ -60,8 +42,22 @@ router.post('/', (req, res) => {
       res.send(`https://ameo.link/u/${oneTime ? 'ot/' : ''}${shortName}`);
     };
 
+    const args = [
+      extension,
+      hash,
+      expiry,
+      muhFile.size,
+      req.body.password,
+      source,
+    ];
+
     dbq.uploadFile({ secret, oneTime })(...args, uploadCb);
   });
+});
+
+router.post('/v2', (req, res) => {
+  console.log(req.headers);
+  console.log(req.body);
 });
 
 module.exports = router;

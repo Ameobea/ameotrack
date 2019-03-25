@@ -198,30 +198,6 @@ dbq.checkExpiredFiles = callback => {
   });
 };
 
-dbq.saveJournal = (muhFile, uploadDate, encrypt, callback) => {
-  helpers.dbConnect(connection => {
-    const oldSavePath = `./journals/${uploadDate.getFullYear()}/${uploadDate.getMonth()}/${uploadDate.getDate()}/${uploadDate.getHours()}-${uploadDate.getMinutes()}-${uploadDate.getSeconds()}.${
-      muhFile.extension
-    }`;
-
-    helpers.getOpenFilename(oldSavePath, newSavePath => {
-      helpers.renameJournal(muhFile.path, newSavePath, uploadDate, () => {
-        connection.query(
-          'INSERT INTO `journals` (path, writtenTime) VALUES(?, ?);',
-          [
-            newSavePath,
-            `${uploadDate.getFullYear()}-${uploadDate.getMonth()}-${uploadDate.getDate()} ${uploadDate.getHours()}:${uploadDate.getMinutes()}:${uploadDate.getSeconds()}`,
-          ],
-          (err, result) => {
-            connection.destroy();
-            callback('Journal successfully uploaded!');
-          }
-        );
-      });
-    });
-  });
-};
-
 dbq.getBin = (shortname, callback) => {
   helpers.dbConnect(conn => {
     conn.query(
