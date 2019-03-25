@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
-const hasher = require('hash-files');
+const crypto = require('crypto');
 const bodyParser = require('body-parser');
 
 const dbq = require('../helpers/dbQuery.js');
@@ -23,7 +23,12 @@ router.post('/', multerInstance.any(), (req, res) => {
 
   const extension = muhFile.originalname.split('.')[1];
   const filePath = muhFile.path;
-  hasher({ files: [filePath] }, (error, hash) => {
+
+  const shasum = crypto.createHash('sha1');
+  const stream = fs.ReadStream(filePath);
+  stream.on('data', data => shasum.update(data));
+  stream.on('end', () => {
+    const hash = shasum.digest('hex');
     const { expiry = -1, source = 'manual', oneTime, secret } = req.body;
 
     const uploadCb = (shortName, newPath) => {
