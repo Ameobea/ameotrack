@@ -1,6 +1,6 @@
-FROM node:10.7.0-stretch
+FROM node:10.4.0-stretch
 
-LABEL MAINTAINER="Casey Primozic <me@ameo.link>"
+LABEL MAINTAINER="Casey Primozic <casey@cprimozic.net>"
 
 # RUN apt-get --no-cache add curl
 RUN curl https://sh.rustup.rs -sSf | \

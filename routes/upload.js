@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
-const bodyParser = require('body-parser');
+const mv = require('mv');
 
 const dbq = require('../helpers/dbQuery.js');
 
@@ -26,7 +26,7 @@ router.post('/', multerInstance.any(), (req, res) => {
 
   const shasum = crypto.createHash('sha1');
   const stream = fs.ReadStream(filePath);
-  stream.on('data', data => shasum.update(data));
+  stream.on('data', (data) => shasum.update(data));
   stream.on('end', () => {
     const hash = shasum.digest('hex');
     const { expiry = -1, source = 'manual', oneTime, secret } = req.body;
@@ -36,7 +36,7 @@ router.post('/', multerInstance.any(), (req, res) => {
         shortName !== 'Invalid password!' &&
         typeof shortName !== 'undefined'
       ) {
-        fs.rename(filePath, newPath, err => {
+        mv(filePath, newPath, (err) => {
           if (err) {
             console.log('error renaming file!');
             console.log(err);
