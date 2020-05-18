@@ -21,7 +21,8 @@ router.post('/', multerInstance.any(), (req, res) => {
     return res.send('No file was supplied;');
   }
 
-  const extension = muhFile.originalname.split('.')[1];
+  const spl = muhFile.originalname.split('.');
+  const extension = muhFile.originalname.split('.')[spl.length - 1];
   const filePath = muhFile.path;
 
   const shasum = crypto.createHash('sha1');
