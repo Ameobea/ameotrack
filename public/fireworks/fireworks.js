@@ -1,9 +1,9 @@
 var focused = true;
 
-window.onfocus = function() {
+window.onfocus = function () {
   focused = true;
 };
-window.onblur = function() {
+window.onblur = function () {
   focused = false;
 };
 
@@ -13,7 +13,7 @@ TYPES = {};
 
 var quality = 3;
 
-TYPES.basic_rocket = function(vector, position, child_fireworks) {
+TYPES.basic_rocket = function (vector, position, child_fireworks) {
   return {
     x: Math.random() * view.size.width,
     vector: [
@@ -28,17 +28,17 @@ TYPES.basic_rocket = function(vector, position, child_fireworks) {
     child_fireworks: child_fireworks,
     trail: {
       number: 2,
-      vector_generator: function(n, child_n) {
+      vector_generator: function (n, child_n) {
         // n = total children fireworks; child_n is the index of current child firework
-        rads = 2 * Math.PI / n * child_n;
+        rads = ((2 * Math.PI) / n) * child_n;
         //console.log([Math.sin(rads), Math.cos(rads)])
         if (child_n % 2 == 0) {
-          return [Math.random() * -1 / 5, 0];
+          return [(Math.random() * -1) / 5, 0];
         } else {
-          return [Math.random() * 1 / 5, 0];
+          return [(Math.random() * 1) / 5, 0];
         }
       },
-      trail_generator: function(position, tick, width, vector, parent_vector) {
+      trail_generator: function (position, tick, width, vector, parent_vector) {
         position._x += parent_vector[0] * 1 + parent_vector[0] / width / 2;
         position._y += parent_vector[1] * 1 + parent_vector[0] / width / 2;
         if (tick % 2 == 0) {
@@ -54,7 +54,7 @@ TYPES.basic_rocket = function(vector, position, child_fireworks) {
   };
 };
 
-TYPES.moe_firework = function(vector, position) {
+TYPES.moe_firework = function (vector, position) {
   return {
     x: Math.random() * view.size.width,
     vector: [
@@ -68,9 +68,9 @@ TYPES.moe_firework = function(vector, position) {
     mass: 300,
     child_fireworks: {
       number: 36,
-      vector_generator: function(n, child_n) {
+      vector_generator: function (n, child_n) {
         // n = total children fireworks; child_n is the index of current child firework
-        rads = 2 * Math.PI / n * child_n;
+        rads = ((2 * Math.PI) / n) * child_n;
         //console.log([Math.sin(rads), Math.cos(rads)])
         /*if(child_n%2 == 0){
           return [Math.sin(rads)*3, Math.cos(rads)*child_n]
@@ -79,14 +79,14 @@ TYPES.moe_firework = function(vector, position) {
         }*/
         return [Math.sin(rads) * Math.random(), Math.cos(rads) * 1.2];
       },
-      child_generator: function(n, vector, position) {
+      child_generator: function (n, vector, position) {
         return TYPES.moe_firework_ember(vector, position);
       },
     },
   };
 };
 
-TYPES.moe_firework_ember = function(vector, position) {
+TYPES.moe_firework_ember = function (vector, position) {
   return {
     position: position,
     vector: vector,
@@ -97,17 +97,17 @@ TYPES.moe_firework_ember = function(vector, position) {
     mass: 75,
     trail: {
       number: 1,
-      vector_generator: function(n, child_n) {
+      vector_generator: function (n, child_n) {
         // n = total children fireworks; child_n is the index of current child firework
-        rads = 2 * Math.PI / n * child_n;
+        rads = ((2 * Math.PI) / n) * child_n;
         //console.log([Math.sin(rads), Math.cos(rads)])
         if (child_n % 2 == 0) {
-          return [Math.random() * -1 / 5, 0];
+          return [(Math.random() * -1) / 5, 0];
         } else {
-          return [Math.random() * 1 / 5, 0];
+          return [(Math.random() * 1) / 5, 0];
         }
       },
-      trail_generator: function(position, tick, width, vector, parent_vector) {
+      trail_generator: function (position, tick, width, vector, parent_vector) {
         position._x += parent_vector[0] * 1 + parent_vector[0] / width / 2;
         position._y += parent_vector[1] * 1 + parent_vector[0] / width / 2;
         if (tick % 3 == 0) {
@@ -120,7 +120,7 @@ TYPES.moe_firework_ember = function(vector, position) {
   };
 };
 
-TYPES.elotrack_pageview_ember = function(vector, position) {
+TYPES.elotrack_pageview_ember = function (vector, position) {
   return {
     position: position,
     vector: vector,
@@ -137,12 +137,12 @@ TYPES.elotrack_pageview_ember = function(vector, position) {
   };
 };
 
-TYPES.elotrack_pageview = function(vector, position) {
+TYPES.elotrack_pageview = function (vector, position) {
   return TYPES.basic_rocket(vector, position, {
     number: 30,
-    vector_generator: function(n, child_n) {
+    vector_generator: function (n, child_n) {
       // n = total children fireworks; child_n is the index of current child firework
-      rads = 2 * Math.PI / n * child_n;
+      rads = ((2 * Math.PI) / n) * child_n;
       //console.log([Math.sin(rads), Math.cos(rads)])
       if (child_n % 2 == 0) {
         return [Math.sin(rads) * 0.75, Math.cos(rads) * 0.75];
@@ -150,18 +150,18 @@ TYPES.elotrack_pageview = function(vector, position) {
         return [Math.sin(rads) * 0.5, Math.cos(rads) * 0.5];
       }
     },
-    child_generator: function(n, vector, position) {
+    child_generator: function (n, vector, position) {
       return TYPES.elotrack_pageview_ember(vector, position);
     },
   });
 };
 
-TYPES.osutrack_irc = function(vector, position) {
+TYPES.osutrack_irc = function (vector, position) {
   return TYPES.basic_rocket(vector, position, {
     number: 30,
-    vector_generator: function(n, child_n) {
+    vector_generator: function (n, child_n) {
       // n = total children fireworks; child_n is the index of current child firework
-      rads = 2 * Math.PI / n * child_n;
+      rads = ((2 * Math.PI) / n) * child_n;
       //console.log([Math.sin(rads), Math.cos(rads)])
       if (child_n % 2 == 0) {
         return [Math.sin(rads) * 0.75, Math.cos(rads) * 0.75];
@@ -169,18 +169,18 @@ TYPES.osutrack_irc = function(vector, position) {
         return [Math.sin(rads) * 0.5, Math.cos(rads) * 0.5];
       }
     },
-    child_generator: function(n, vector, position) {
+    child_generator: function (n, vector, position) {
       return TYPES.osutrack_default_ember(vector, position);
     },
   });
 };
 
-TYPES.ameotrack_fireworks = function(vector, position) {
+TYPES.ameotrack_fireworks = function (vector, position) {
   return TYPES.basic_rocket(vector, position, {
     number: 30,
-    vector_generator: function(n, child_n) {
+    vector_generator: function (n, child_n) {
       // n = total children fireworks; child_n is the index of current child firework
-      rads = 2 * Math.PI / n * child_n;
+      rads = ((2 * Math.PI) / n) * child_n;
       //console.log([Math.sin(rads), Math.cos(rads)])
       if (child_n % 2 == 0) {
         return [Math.sin(rads) * 0.75, Math.cos(rads) * 0.75];
@@ -188,18 +188,18 @@ TYPES.ameotrack_fireworks = function(vector, position) {
         return [Math.sin(rads) * 0.5, Math.cos(rads) * 0.5];
       }
     },
-    child_generator: function(n, vector, position) {
+    child_generator: function (n, vector, position) {
       return TYPES.random_test_ember(vector, position);
     },
   });
 };
 
-TYPES.ameotrack_image = function(vector, position) {
+TYPES.ameotrack_image = function (vector, position) {
   return TYPES.basic_rocket(vector, position, {
     number: 30,
-    vector_generator: function(n, child_n) {
+    vector_generator: function (n, child_n) {
       // n = total children fireworks; child_n is the index of current child firework
-      rads = 2 * Math.PI / n * child_n;
+      rads = ((2 * Math.PI) / n) * child_n;
       //console.log([Math.sin(rads), Math.cos(rads)])
       if (child_n % 2 == 0) {
         return [Math.sin(rads) * 0.75, Math.cos(rads) * 0.75];
@@ -207,18 +207,18 @@ TYPES.ameotrack_image = function(vector, position) {
         return [Math.sin(rads) * 0.5, Math.cos(rads) * 0.5];
       }
     },
-    child_generator: function(n, vector, position) {
+    child_generator: function (n, vector, position) {
       return TYPES.ameotrack_image_ember(vector, position);
     },
   });
 };
 
-TYPES.osutrack_pageview = function(vector, position) {
+TYPES.osutrack_pageview = function (vector, position) {
   return TYPES.basic_rocket(vector, position, {
     number: 30,
-    vector_generator: function(n, child_n) {
+    vector_generator: function (n, child_n) {
       // n = total children fireworks; child_n is the index of current child firework
-      rads = 2 * Math.PI / n * child_n;
+      rads = ((2 * Math.PI) / n) * child_n;
       //console.log([Math.sin(rads), Math.cos(rads)])
       if (child_n % 2 == 0) {
         return [Math.sin(rads) * 0.75, Math.cos(rads) * 0.75];
@@ -226,7 +226,7 @@ TYPES.osutrack_pageview = function(vector, position) {
         return [Math.sin(rads) * 0.5, Math.cos(rads) * 0.5];
       }
     },
-    child_generator: function(n, vector, position) {
+    child_generator: function (n, vector, position) {
       if (n % 2 == 0) {
         return TYPES.osutrack_default_ember(vector, position);
       } else {
@@ -236,7 +236,7 @@ TYPES.osutrack_pageview = function(vector, position) {
   });
 };
 
-TYPES.random_test = function() {
+TYPES.random_test = function () {
   return {
     x: Math.random() * view.size.width,
     vector: [
@@ -250,9 +250,9 @@ TYPES.random_test = function() {
     mass: 250,
     child_fireworks: {
       number: 30,
-      vector_generator: function(n, child_n) {
+      vector_generator: function (n, child_n) {
         // n = total children fireworks; child_n is the index of current child firework
-        rads = 2 * Math.PI / n * child_n;
+        rads = ((2 * Math.PI) / n) * child_n;
         //console.log([Math.sin(rads), Math.cos(rads)])
         if (child_n % 2 == 0) {
           return [Math.sin(rads) * 0.75, Math.cos(rads) * 0.75];
@@ -260,23 +260,23 @@ TYPES.random_test = function() {
           return [Math.sin(rads) * 0.5, Math.cos(rads) * 0.5];
         }
       },
-      child_generator: function(n, vector, position) {
+      child_generator: function (n, vector, position) {
         return TYPES.random_test_ember(vector, position);
       },
     },
     trail: {
       number: 2,
-      vector_generator: function(n, child_n) {
+      vector_generator: function (n, child_n) {
         // n = total children fireworks; child_n is the index of current child firework
-        rads = 2 * Math.PI / n * child_n;
+        rads = ((2 * Math.PI) / n) * child_n;
         //console.log([Math.sin(rads), Math.cos(rads)])
         if (child_n % 2 == 0) {
-          return [Math.random() * -1 / 5, 0];
+          return [(Math.random() * -1) / 5, 0];
         } else {
-          return [Math.random() * 1 / 5, 0];
+          return [(Math.random() * 1) / 5, 0];
         }
       },
-      trail_generator: function(position, tick, width, vector, parent_vector) {
+      trail_generator: function (position, tick, width, vector, parent_vector) {
         position._x += parent_vector[0] * 1 + parent_vector[0] / width / 2;
         position._y += parent_vector[1] * 1 + parent_vector[0] / width / 2;
         if (tick % 2 == 0) {
@@ -292,7 +292,7 @@ TYPES.random_test = function() {
   };
 };
 
-TYPES.random_test_ember = function(vector, position) {
+TYPES.random_test_ember = function (vector, position) {
   return {
     position: position,
     vector: vector,
@@ -301,7 +301,7 @@ TYPES.random_test_ember = function(vector, position) {
     explosion_delay: 60 * Math.random() + 60,
     tick: 0,
     mass: 25,
-    color_generator: function(fillColor, strokeColor) {
+    color_generator: function (fillColor, strokeColor) {
       fillColor.hue += 10;
       strokeColor.hue += 10;
       return [fillColor, strokeColor];
@@ -309,7 +309,7 @@ TYPES.random_test_ember = function(vector, position) {
   };
 };
 
-TYPES.osutrack_irc_ember = function(vector, position) {
+TYPES.osutrack_irc_ember = function (vector, position) {
   return {
     position: position,
     vector: vector,
@@ -326,7 +326,7 @@ TYPES.osutrack_irc_ember = function(vector, position) {
   };
 };
 
-TYPES.osutrack_default_ember = function(vector, position) {
+TYPES.osutrack_default_ember = function (vector, position) {
   return {
     position: position,
     vector: vector,
@@ -343,7 +343,7 @@ TYPES.osutrack_default_ember = function(vector, position) {
   };
 };
 
-TYPES.ameotrack_image_ember = function(vector, position) {
+TYPES.ameotrack_image_ember = function (vector, position) {
   return {
     position: position,
     vector: vector,
@@ -360,7 +360,7 @@ TYPES.ameotrack_image_ember = function(vector, position) {
   };
 };
 
-TYPES.random_test_trail = function(vector, position) {
+TYPES.random_test_trail = function (vector, position) {
   return {
     position: position,
     vector: vector,
@@ -377,7 +377,7 @@ TYPES.random_test_trail = function(vector, position) {
   };
 };
 
-TYPES.moe_firework_trail = function(vector, position) {
+TYPES.moe_firework_trail = function (vector, position) {
   return {
     position: position,
     vector: vector,
@@ -496,15 +496,15 @@ function random_spawner() {
   if (focused) {
     spawn_firework(TYPES.random_test());
   }
-  setTimeout(function() {
+  setTimeout(function () {
     random_spawner();
   }, 500);
 }
 
 // MAIN
-var socket = new WebSocket('ws://ip.ameobea.me:7507/');
+var socket = new WebSocket('wss://ameo.link:8401/');
 
-socket.onmessage = function(data) {
+socket.onmessage = function (data) {
   message = JSON.parse(data.data);
   //console.log("mesage recieved from server: " + message);
   if (message.type == 'event') {
@@ -513,6 +513,6 @@ socket.onmessage = function(data) {
   }
 };
 
-socket.onerror = function(error) {
+socket.onerror = function (error) {
   console.log('WebSocket Error ' + error);
 };
