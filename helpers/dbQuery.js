@@ -13,8 +13,8 @@ dbq.doDelete = (shortname, password, callback) => {
     callback('Invalid password!');
   }
 
-  helpers.dbConnect(connection => {
-    helpers.deleteRowByShortname(shortname, connection, result => {
+  helpers.dbConnect((connection) => {
+    helpers.deleteRowByShortname(shortname, connection, (result) => {
       callback(
         result === true
           ? 'Successfully deleted file!'
@@ -22,14 +22,14 @@ dbq.doDelete = (shortname, password, callback) => {
       );
 
       connection.end(
-        err => err && console.error('Error while closing MySQL Connection!')
+        (err) => err && console.error('Error while closing MySQL Connection!')
       );
     });
   });
 };
 
-dbq.deleteIfOneTimeView = shortname =>
-  helpers.dbConnect(connection => {
+dbq.deleteIfOneTimeView = (shortname) =>
+  helpers.dbConnect((connection) => {
     const queryString =
       'SELECT `one_time` FROM `hostedFiles` WHERE `shortname` = ?';
     connection.query(queryString, [shortname], (err, oneTime) => {
@@ -44,7 +44,7 @@ dbq.deleteIfOneTimeView = shortname =>
   });
 
 dbq.logFileAccess = (image_code, ip, country_code, user_agent) => {
-  helpers.dbConnect(connection => {
+  helpers.dbConnect((connection) => {
     if (!ip) {
       ip = null;
     }
@@ -89,7 +89,7 @@ dbq.startFileUpload = (
     ? { dotOrNaw: '.', ext: _ext }
     : { dotOrNaw: '', ext: '' };
 
-  helpers.dbConnect(connection => {
+  helpers.dbConnect((connection) => {
     // Unique identifier for new file rows, allowing for concurrent uploads
     const res = Math.random() + Math.random() + Math.random();
     const query = 'SELECT * FROM `hostedFiles` WHERE `hash` = ?';
@@ -170,7 +170,7 @@ dbq.uploadFile = ({ oneTime = false, secret = false }) => (
       };
 
       connection.query(
-        `UPDATE \`hostedFiles\` SET ? WHERE \`shortname\` = ${res};`,
+        `UPDATE \`hostedFiles\` SET ? WHERE \`shortname\` = '${res}';`,
         values,
         (err, res) => {
           connection.destroy();
@@ -186,8 +186,8 @@ dbq.uploadFile = ({ oneTime = false, secret = false }) => (
     }
   );
 
-dbq.checkExpiredFiles = callback => {
-  helpers.dbConnect(connection => {
+dbq.checkExpiredFiles = (callback) => {
+  helpers.dbConnect((connection) => {
     connection.query(
       'SELECT `shortname` FROM `hostedFiles` WHERE `expiry` < NOW();',
       (err, result) => {
@@ -199,7 +199,7 @@ dbq.checkExpiredFiles = callback => {
 };
 
 dbq.getBin = (shortname, callback) => {
-  helpers.dbConnect(conn => {
+  helpers.dbConnect((conn) => {
     conn.query(
       'SELECT * FROM `bins` WHERE `shortname` = ?;',
       [shortname],
@@ -211,16 +211,13 @@ dbq.getBin = (shortname, callback) => {
 };
 
 dbq.saveBin = (shortname, password, text, filename, secret, cb) => {
-  helpers.dbConnect(conn => {
+  helpers.dbConnect((conn) => {
     conn.query(
       'SELECT * FROM `bins` WHERE `shortname` = ?;',
       [shortname],
       (err, existing) => {
         if (shortname == '') {
-          const sha256 = crypto
-            .createHash('sha256')
-            .update(text)
-            .digest('hex');
+          const sha256 = crypto.createHash('sha256').update(text).digest('hex');
 
           dbq.startFileUpload(
             'ameobin',
@@ -285,7 +282,7 @@ dbq.list_images = (start, end) =>
 
     const query =
       'SELECT * FROM `hostedFiles` WHERE 1 ORDER BY `uploadTime` DESC LIMIT ?,?;';
-    helpers.dbConnect(conn => {
+    helpers.dbConnect((conn) => {
       conn.query(query, [startIndex, endIndex], (err, res) => {
         if (err) {
           console.log(err);
@@ -295,9 +292,7 @@ dbq.list_images = (start, end) =>
 
         let urls = '[';
         for (let i = 0; i < res.length; i++) {
-          urls += `"https://ameo.link/u/${res[i].shortname}.${
-            res[i].extension
-          }/", `;
+          urls += `"https://ameo.link/u/${res[i].shortname}.${res[i].extension}/", `;
         }
         f(urls + ']');
 
