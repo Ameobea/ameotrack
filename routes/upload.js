@@ -4,6 +4,11 @@ const multer = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
 const mv = require('mv');
+const axios = require('axios');
+const path = require('path');
+
+const conf = require('../helpers/conf.js');
+const { storageZoneName, accessKey } = conf;
 
 const dbq = require('../helpers/dbQuery.js');
 
@@ -32,20 +37,38 @@ router.post('/', multerInstance.any(), (req, res) => {
     const hash = shasum.digest('hex');
     const { expiry = -1, source = 'manual', oneTime, secret } = req.body;
 
-    const uploadCb = (shortName, newPath) => {
+    const uploadCb = async (shortName, newPath) => {
       if (
         shortName !== 'Invalid password!' &&
         typeof shortName !== 'undefined'
       ) {
-        mv(filePath, newPath, (err) => {
+        mv(filePath, newPath, async (err) => {
           if (err) {
             console.log('error renaming file!');
             console.log(err);
+          } else {
+            // Upload the file to external storage
+            const fileBuffer = fs.readFileSync(newPath);
+            const fileUrl = `https://storage.bunnycdn.com/${storageZoneName}/${shortName}`;
+
+            try {
+              await axios.put(fileUrl, fileBuffer, {
+                headers: {
+                  AccessKey: accessKey,
+                  'content-type': 'application/octet-stream',
+                },
+              });
+            } catch (error) {
+              console.error(
+                'Error uploading to external storage:',
+                error.message
+              );
+            }
           }
         });
       }
 
-      res.send(`https://ameo.link/u/${oneTime ? 'ot/' : ''}${shortName}`);
+      res.send(`https://i.ameo.link/${shortName}`);
     };
 
     const args = [
@@ -67,3 +90,4 @@ router.post('/v2', (req, res) => {
 });
 
 module.exports = router;
+

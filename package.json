@@ -6,12 +6,13 @@
     "start": "node app.js"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "1.18.3",
     "cookie-parser": "1.4.3",
     "ejs": "2.5.7",
     "express": "4.16.2",
-    "ffi": "git://github.com/node-ffi/node-ffi.git",
+    "ffi": "2.3.0",
     "funfix": "^7.0.1",
     "mailgun-js": "0.14.2",
     "morgan": "^1.9.1",
