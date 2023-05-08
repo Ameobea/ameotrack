@@ -5,7 +5,6 @@ const fs = require('fs');
 const crypto = require('crypto');
 const mv = require('mv');
 const axios = require('axios');
-const path = require('path');
 
 const conf = require('../helpers/conf.js');
 const { storageZoneName, accessKey } = conf;
@@ -90,4 +89,3 @@ router.post('/v2', (req, res) => {
 });
 
 module.exports = router;
-

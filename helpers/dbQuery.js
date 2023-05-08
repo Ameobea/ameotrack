@@ -143,53 +143,47 @@ dbq.startFileUpload = (
   });
 };
 
-dbq.uploadFile = ({ oneTime = false, secret = false }) => (
-  extension,
-  hash,
-  expiry,
-  size,
-  password,
-  source,
-  cb
-) =>
-  dbq.startFileUpload(
-    extension,
-    hash,
-    expiry,
-    size,
-    password,
-    source,
-    (placeholder, connection, dorOrNaw, res) => {
-      const shortName = secret ? hash : placeholder[0].id.toString(36);
-      const dotOrNaw = extension ? '.' : '';
-      const path = './uploads/'.concat(shortName, dotOrNaw, extension);
-      const values = {
-        shortname: shortName,
-        path,
-        one_time: oneTime ? 1 : 0,
-      };
+dbq.uploadFile =
+  ({ oneTime = false, secret = false }) =>
+  (extension, hash, expiry, size, password, source, cb) =>
+    dbq.startFileUpload(
+      extension,
+      hash,
+      expiry,
+      size,
+      password,
+      source,
+      (placeholder, connection, dorOrNaw, res) => {
+        const shortName = secret ? hash : placeholder[0].id.toString(36);
+        const dotOrNaw = extension ? '.' : '';
+        const path = './uploads/'.concat(shortName, dotOrNaw, extension);
+        const values = {
+          shortname: shortName,
+          path,
+          one_time: oneTime ? 1 : 0,
+        };
 
-      connection.query(
-        `UPDATE \`hostedFiles\` SET ? WHERE \`shortname\` = '${res}';`,
-        values,
-        (err, res) => {
-          connection.destroy();
-          if (err) {
-            console.log('error updating the new row in the database');
-            console.log(err.stack);
-          } else {
-            // Return the filename of the newly uploaded file to the upload route
-            cb(shortName.concat(dotOrNaw, extension), path);
+        connection.query(
+          `UPDATE \`hostedFiles\` SET ? WHERE \`shortname\` = '${res}';`,
+          values,
+          (err, res) => {
+            connection.destroy();
+            if (err) {
+              console.log('error updating the new row in the database');
+              console.log(err.stack);
+            } else {
+              // Return the filename of the newly uploaded file to the upload route
+              cb(shortName.concat(dotOrNaw, extension), path);
+            }
           }
-        }
-      );
-    }
-  );
+        );
+      }
+    );
 
 dbq.checkExpiredFiles = (callback) => {
   helpers.dbConnect((connection) => {
     connection.query(
-      'SELECT `shortname` FROM `hostedFiles` WHERE `expiry` < NOW();',
+      'SELECT `shortname`, `extension` FROM `hostedFiles` WHERE `expiry` < NOW();',
       (err, result) => {
         connection.end();
         callback(result);
