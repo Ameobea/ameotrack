@@ -56,6 +56,8 @@ router.post('/', multerInstance.any(), (req, res) => {
                   AccessKey: accessKey,
                   'content-type': 'application/octet-stream',
                 },
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
               });
             } catch (error) {
               console.error(
